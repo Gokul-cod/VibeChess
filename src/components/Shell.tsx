@@ -1,0 +1,102 @@
+import type { AuthUser } from '../types';
+
+export function BrandMark({ size = 26 }: { size?: number }) {
+  return (
+    <svg viewBox="0 0 32 32" width={size} height={size} aria-hidden="true">
+      <path
+        d="M9.4 25.5h13.2l-1.1-3.1H10.5z"
+        fill="#f0b264"
+      />
+      <path
+        d="M12.3 22.4h7.4c.5-3.4 1.6-5.6 3.3-7.5 2.1-2.3 2.1-5.3.3-7.2-2.1-2.2-5.5-1.9-7.6.4-1 1.1-1.5 2.4-1.6 3.8l-2.9 3.6 2.5 1.2-2.1 5.7z"
+        fill="#e9a44c"
+      />
+      <circle cx="19.6" cy="8.9" r="1.05" fill="#2a1609" />
+      <path d="M6.8 26.9h18.4v2.2H6.8z" fill="#a9704a" />
+    </svg>
+  );
+}
+
+export function Brand({ tagline = 'weekly chess reviews' }: { tagline?: string }) {
+  return (
+    <div className="brand">
+      <span className="brand__mark">
+        <BrandMark />
+      </span>
+      <div>
+        <p className="brand__name">VibeChess</p>
+        <p className="brand__tag">{tagline}</p>
+      </div>
+    </div>
+  );
+}
+
+export type AppView = 'home' | 'weekly';
+
+interface TopBarProps {
+  view: AppView;
+  onNavigate: (view: AppView) => void;
+  user: AuthUser;
+  onSignOut: () => void;
+}
+
+export function TopBar({ view, onNavigate, user, onSignOut }: TopBarProps) {
+  const initial = (user.name || user.email || '?').trim().charAt(0).toUpperCase();
+  return (
+    <header className="topbar">
+      <Brand />
+      <nav className="topnav" aria-label="Main">
+        <button
+          className={`topnav__tab${view === 'home' ? ' is-active' : ''}`}
+          onClick={() => onNavigate('home')}
+          aria-current={view === 'home' ? 'page' : undefined}
+        >
+          Game review
+        </button>
+        <button
+          className={`topnav__tab${view === 'weekly' ? ' is-active' : ''}`}
+          onClick={() => onNavigate('weekly')}
+          aria-current={view === 'weekly' ? 'page' : undefined}
+        >
+          Weekly report
+        </button>
+      </nav>
+      <div className="topbar__user">
+        <span className="avatar" aria-hidden="true">
+          {initial}
+        </span>
+        <span className="topbar__email" title={user.email}>
+          {user.email}
+        </span>
+        <button className="ghost-link" onClick={onSignOut}>
+          Sign out
+        </button>
+      </div>
+    </header>
+  );
+}
+
+export function SiteFooter({ onPrivacy, engineMode }: { onPrivacy: () => void; engineMode?: 'server' | 'browser' | null }) {
+  return (
+    <footer className="footer">
+      <span>
+        VibeChess · Engine: Stockfish 19 ·{' '}
+        {engineMode === 'browser' ? 'WebAssembly in your browser' : 'native analysis server'} ·{' '}
+        <a
+          className="footer__link"
+          href={`${import.meta.env.BASE_URL}engine/COPYING.txt`}
+          target="_blank"
+          rel="noreferrer"
+        >
+          GPLv3
+        </a>
+      </span>
+      <span className="footer__links">
+        <button className="ghost-link" onClick={onPrivacy}>
+          Privacy policy
+        </button>
+        <span>Games read from Chess.com &amp; Lichess public APIs</span>
+      </span>
+    </footer>
+  );
+}

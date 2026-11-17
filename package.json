@@ -1,0 +1,41 @@
+{
+  "name": "vibechess",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "VibeChess — Stockfish-powered game review and weekly chess reports",
+  "scripts": {
+    "dev": "node scripts/dev.mjs",
+    "dev:web": "vite",
+    "dev:api": "node server/index.mjs",
+    "build": "tsc --noEmit && vite build",
+    "build:site": "npm run build && node scripts/build-worker.mjs",
+    "build:pages": "npm run build && node scripts/build-pages.mjs",
+    "preview": "vite preview",
+    "start": "node server/index.mjs",
+    "engine:install": "bash scripts/install-stockfish.sh",
+    "dev:netlify": "npx netlify-cli dev",
+    "deploy:netlify": "npx netlify-cli deploy --build --prod",
+    "deploy:netlify:new": "npx netlify-cli deploy --build --prod --site-name vibechess"
+  },
+  "dependencies": {
+    "@fontsource-variable/fraunces": "^5.3.0",
+    "@fontsource-variable/outfit": "^5.3.0",
+    "@netlify/blobs": "^11.1.9",
+    "chess.js": "^1.4.0",
+    "express": "^5.3.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^26.6.6",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.3.0",
+    "esbuild": "^0.28.2",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.8",
+    "wrangler": "^4.163.0"
+  }
+}

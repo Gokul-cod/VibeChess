@@ -1,0 +1,32 @@
+# Netlify deployment for VibeChess.
+#
+# `npm run build` produces the static React app in dist/. The API is a single
+# Functions v2 handler in netlify/functions/api.mjs that serves every /api/*
+# route, with accounts stored in Netlify Blobs.
+#
+# Environment variables:
+#   VIBECHESS_ALLOWED_ORIGINS  comma-separated origins allowed to call this API
+#                              from another site, e.g. https://yourname.github.io.
+#                              Unset means same-origin only (the app hosted here).
+
+[build]
+  command = "npm run build"
+  publish = "dist"
+  functions = "netlify/functions"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+# The API routes must be rewritten before the SPA catch-all, otherwise the
+# catch-all would answer /api/* with index.html.
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/api/:splat"
+  status = 200
+  force = true
+
+# Single-page app: every other path loads the app shell.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
