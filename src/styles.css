@@ -86,8 +86,9 @@ html {
 
 body {
   min-height: 100vh;
-  background: var(--page-bg);
-  background-attachment: fixed;
+  /* The gradient lives on .backdrop (a fixed layer that can drift); the body
+     stays transparent so that layer shows through, and html paints the canvas. */
+  background: transparent;
   color: var(--cream);
   font-family: var(--font-ui);
   font-size: 16px;
@@ -3967,4 +3968,185 @@ button.inline-link {
   letter-spacing: 0.08em;
   text-align: center;
   color: var(--cream);
+}
+
+/* ============================================================
+   Motion polish — backdrop drift, page transitions, loading
+   ============================================================ */
+
+:root {
+  --ease-out-soft: cubic-bezier(0.16, 0.84, 0.3, 1);
+}
+
+/* The gradient sits on its own layer so scrolling can drift it without moving
+   the content, and the pointer adds a small opposing shift. */
+.backdrop {
+  position: fixed;
+  inset: -8%;
+  z-index: -1;
+  pointer-events: none;
+  background: var(--page-bg);
+  background-size: cover;
+  background-repeat: no-repeat;
+  transform: translate3d(var(--plx-x, 0px), var(--plx-y, 0px), 0) scale(1.05);
+  will-change: transform;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+@keyframes view-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 18px, 0) scale(0.994);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.view > * {
+  animation: view-in 0.55s var(--ease-out-soft) both;
+}
+
+.review {
+  animation-duration: 0.45s;
+}
+
+.home__main > * {
+  animation: view-in 0.55s var(--ease-out-soft) both;
+}
+
+.home__main > *:nth-child(2) {
+  animation-delay: 0.05s;
+}
+
+.home__main > *:nth-child(3) {
+  animation-delay: 0.1s;
+}
+
+.home__main > *:nth-child(n + 4) {
+  animation-delay: 0.15s;
+}
+
+.button {
+  transition:
+    transform 0.24s var(--ease-out-soft),
+    box-shadow 0.3s ease,
+    background 0.22s ease,
+    border-color 0.22s ease,
+    opacity 0.22s ease;
+}
+
+.button:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.button:active:not(:disabled) {
+  transform: translateY(0) scale(0.965);
+  transition-duration: 0.09s;
+}
+
+.topnav__tab,
+.nav__button,
+.back,
+.tab,
+.segment,
+.weekchip,
+.side-toggle__btn,
+.appearance__button,
+.appearance__option,
+.gamecard,
+.report__close,
+.inline-link,
+.movelist__move {
+  transition-timing-function: var(--ease-out-soft);
+}
+
+.gamecard {
+  transition:
+    transform 0.26s var(--ease-out-soft),
+    background 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.3s ease;
+}
+
+.movelist__move {
+  transition:
+    background 0.18s ease,
+    color 0.18s ease,
+    box-shadow 0.22s ease;
+}
+
+/* Loading: a sheen travelling along the progress bar reads as progress even
+   when the engine reports only a few steps. */
+.progress__bar {
+  background-image: linear-gradient(90deg, #e9a44c, #f7c87c, #ffe6bf, #f7c87c, #e9a44c);
+  background-size: 200% 100%;
+  animation: progress-sheen 1.8s linear infinite;
+  transition: width 0.5s var(--ease-out-soft);
+}
+
+@keyframes progress-sheen {
+  from {
+    background-position: 0% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+
+.loading-card {
+  animation: view-in 0.5s var(--ease-out-soft) both;
+}
+
+.boot {
+  animation: fade-in 0.4s ease both;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.boot__mark {
+  animation:
+    boot-spin 1.05s cubic-bezier(0.6, 0.15, 0.35, 0.85) infinite,
+    boot-glow 2.2s ease-in-out infinite;
+}
+
+@keyframes boot-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgb(var(--glow) / 0.24);
+  }
+  50% {
+    box-shadow: 0 0 26px 2px rgb(var(--glow) / 0.3);
+  }
+}
+
+.boot p {
+  animation: breathe 2.4s ease-in-out infinite;
+}
+
+@keyframes breathe {
+  0%,
+  100% {
+    opacity: 0.62;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .backdrop {
+    transform: none;
+  }
 }

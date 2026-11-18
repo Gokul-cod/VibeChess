@@ -4,6 +4,7 @@ import '@fontsource-variable/fraunces';
 import '@fontsource-variable/outfit';
 import './styles.css';
 import App from './App';
+import { Backdrop } from './components/Backdrop';
 import { initTheme } from './lib/theme';
 
 initTheme();
@@ -13,6 +14,7 @@ if (!root) throw new Error('Root element missing');
 
 createRoot(root).render(
   <StrictMode>
+    <Backdrop />
     <App />
   </StrictMode>,
 );
