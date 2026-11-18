@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { signIn, signUp } from '../lib/auth';
 import type { AuthUser } from '../types';
 import { Cocoa } from './Coach';
+import { ReportIssue } from './ReportIssue';
 import { Brand } from './Shell';
 
 interface AuthViewProps {
@@ -158,6 +159,10 @@ export function AuthView({ onAuthenticated, onPrivacy, reason }: AuthViewProps) 
               privacy policy
             </button>
             . We store your name, email and a password hash — nothing else.
+          </p>
+
+          <p className="auth__legal">
+            Trouble signing in? <ReportIssue className="inline-link" label="Report an issue" />
           </p>
         </div>
       </section>

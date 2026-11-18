@@ -1,4 +1,5 @@
 import type { AuthUser } from '../types';
+import { ReportIssue } from './ReportIssue';
 
 export function BrandMark({ size = 26 }: { size?: number }) {
   return (
@@ -76,7 +77,15 @@ export function TopBar({ view, onNavigate, user, onSignOut }: TopBarProps) {
   );
 }
 
-export function SiteFooter({ onPrivacy, engineMode }: { onPrivacy: () => void; engineMode?: 'server' | 'browser' | null }) {
+export function SiteFooter({
+  onPrivacy,
+  engineMode,
+  userEmail,
+}: {
+  onPrivacy: () => void;
+  engineMode?: 'server' | 'browser' | null;
+  userEmail?: string | null;
+}) {
   return (
     <footer className="footer">
       <span>
@@ -95,6 +104,7 @@ export function SiteFooter({ onPrivacy, engineMode }: { onPrivacy: () => void; e
         <button className="ghost-link" onClick={onPrivacy}>
           Privacy policy
         </button>
+        <ReportIssue userEmail={userEmail} engineMode={engineMode} />
         <span>Games read from Chess.com &amp; Lichess public APIs</span>
       </span>
     </footer>
