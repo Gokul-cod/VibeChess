@@ -12,7 +12,7 @@
 
 /** Origins the project's own GitHub Pages sites are served from. Keeping these
  *  built in means renaming the account or repository needs no server config. */
-const PROJECT_ORIGINS = ['https://gokul-cod.github.io', 'https://cocoachess.github.io'];
+export const PROJECT_ORIGINS = ['https://gokul-cod.github.io', 'https://cocoachess.github.io'];
 
 function normalizeOrigin(origin) {
   return String(origin).trim().replace(/\/+$/, '');

@@ -5,6 +5,8 @@
  * opaque session tokens in an HttpOnly cookie. No third-party auth service.
  */
 
+import { PROJECT_ORIGINS } from '../server/cors.mjs';
+
 const SESSION_COOKIE = 'vc_session';
 const SESSION_DAYS = 30;
 const PBKDF2_ITERATIONS = 100_000;
@@ -101,7 +103,8 @@ function sameOrigin(request, configured) {
   }
   if (hostsOf(request).some((host) => host && host === originHost)) return true;
   // A split deployment: the static app runs on another site (GitHub Pages).
-  return allowedOrigins(configured).includes(origin.trim().replace(/\/+$/, ''));
+  const normalized = origin.trim().replace(/\/+$/, '');
+  return allowedOrigins(configured).includes(normalized) || PROJECT_ORIGINS.includes(normalized);
 }
 
 /** The page is on a different site than this worker, so cookies cannot be relied on. */
