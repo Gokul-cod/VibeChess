@@ -53,7 +53,7 @@ export function ReportIssue({ userEmail, engineMode, label = 'Report an issue', 
     message.trim(),
     '',
     '---',
-    'Sent from VibeChess',
+    'Sent from CocoaChess',
     `Reply to: ${from.trim() || 'not signed in'}`,
     `Engine: ${engineLabel}`,
     `Page: ${window.location.href}`,
@@ -61,7 +61,7 @@ export function ReportIssue({ userEmail, engineMode, label = 'Report an issue', 
     `When: ${new Date().toISOString()}`,
   ].join('\n');
 
-  const href = `mailto:${REPORT_INBOX}?subject=${encodeURIComponent('VibeChess issue report')}&body=${encodeURIComponent(body)}`;
+  const href = `mailto:${REPORT_INBOX}?subject=${encodeURIComponent('CocoaChess issue report')}&body=${encodeURIComponent(body)}`;
   const ready = message.trim().length >= 4;
 
   return (

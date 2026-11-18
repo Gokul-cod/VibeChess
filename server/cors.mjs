@@ -5,7 +5,7 @@
  * Same-origin deployments are unaffected: without an `Origin` header (curl,
  * ordinary same-origin GETs) no CORS headers are added at all.
  *
- * The allowlist is comma separated and comes from `VIBECHESS_ALLOWED_ORIGINS`
+ * The allowlist is comma separated and comes from `COCOACHESS_ALLOWED_ORIGINS`
  * on Netlify and from the `ALLOWED_ORIGINS` variable on the worker. Entries are
  * origins, not paths: `https://someone.github.io`, not the repository URL.
  */

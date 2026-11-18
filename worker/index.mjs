@@ -1,5 +1,5 @@
 /**
- * Hosted API for VibeChess.
+ * Hosted API for CocoaChess.
  *
  * The native Stockfish 19 binary cannot run on Cloudflare Workers, so this
  * deployment analyses games with the WASM build of the same engine inside the

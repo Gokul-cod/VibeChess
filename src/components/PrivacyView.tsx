@@ -1,7 +1,7 @@
 import { Brand, BrandMark } from './Shell';
 
 const UPDATED = '17 November 2026';
-const CONTACT = 'privacy@vibechess.app';
+const CONTACT = 'privacy@cocoachess.app';
 
 export function PrivacyView({ onBack }: { onBack: () => void }) {
   return (
@@ -9,7 +9,7 @@ export function PrivacyView({ onBack }: { onBack: () => void }) {
       <header className="policy-head">
         <Brand tagline="weekly chess reviews" />
         <button className="button button--ghost" onClick={onBack}>
-          <span aria-hidden="true">←</span> Back to VibeChess
+          <span aria-hidden="true">←</span> Back to CocoaChess
         </button>
       </header>
 
@@ -19,14 +19,14 @@ export function PrivacyView({ onBack }: { onBack: () => void }) {
         <p className="policy__updated">Last updated: {UPDATED}</p>
 
         <p className="policy__lede">
-          VibeChess reviews chess games and builds weekly reports. This page explains exactly what we store, why,
+          CocoaChess reviews chess games and builds weekly reports. This page explains exactly what we store, why,
           and what you can ask us to do about it. It describes the app as it is built, not a generic template.
         </p>
 
         <section>
           <h2>1. Who we are</h2>
           <p>
-            VibeChess (“we”, “us”) is a chess review web application. For the purposes of the EU/UK General Data
+            CocoaChess (“we”, “us”) is a chess review web application. For the purposes of the EU/UK General Data
             Protection Regulation we are the data controller for the account information described below. You can
             reach us at <a href={`mailto:${CONTACT}`}>{CONTACT}</a>.
           </p>
@@ -168,7 +168,7 @@ export function PrivacyView({ onBack }: { onBack: () => void }) {
         <section>
           <h2>11. Children</h2>
           <p>
-            VibeChess is not directed at children under 13 (or under 16 in the European Economic Area and the UK).
+            CocoaChess is not directed at children under 13 (or under 16 in the European Economic Area and the UK).
             We do not knowingly collect personal data from them. If you believe a child created an account, contact
             us and we will delete it.
           </p>
@@ -191,7 +191,7 @@ export function PrivacyView({ onBack }: { onBack: () => void }) {
 
         <div className="policy__foot">
           <BrandMark size={20} />
-          <span>VibeChess · chess review without the noise</span>
+          <span>CocoaChess · chess review without the noise</span>
         </div>
       </main>
     </div>

@@ -1,5 +1,5 @@
 /**
- * The VibeChess API as a Netlify Function.
+ * The CocoaChess API as a Netlify Function.
  *
  * Same routes and payloads as the Cloudflare worker in `worker/index.mjs`, but
  * on Netlify's runtime. Accounts live in Netlify Blobs; game reviews still run
@@ -24,10 +24,10 @@ const FUNCTION_PREFIX = '/.netlify/functions/api';
 
 /**
  * Origins allowed to call this API from another site, such as the GitHub Pages
- * copy of the app. Set VIBECHESS_ALLOWED_ORIGINS in the Netlify UI, e.g.
+ * copy of the app. Set COCOACHESS_ALLOWED_ORIGINS in the Netlify UI, e.g.
  * `https://yourname.github.io`. Empty means same-origin only.
  */
-const ALLOWED_ORIGINS = process.env.VIBECHESS_ALLOWED_ORIGINS ?? '';
+const ALLOWED_ORIGINS = process.env.COCOACHESS_ALLOWED_ORIGINS ?? '';
 
 function json(body, status = 200) {
   return new Response(JSON.stringify(body), {

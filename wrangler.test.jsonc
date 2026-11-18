@@ -1,5 +1,5 @@
 {
-  "name": "vibechess-local",
+  "name": "cocoachess-local",
   "main": "deploy/worker.js",
   "compatibility_date": "2026-11-16",
   "assets": {
@@ -10,7 +10,7 @@
   "d1_databases": [
     {
       "binding": "DB",
-      "database_name": "vibechess-local",
+      "database_name": "cocoachess-local",
       "database_id": "00000000-0000-0000-0000-000000000000"
     }
   ]

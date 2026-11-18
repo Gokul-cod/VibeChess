@@ -1,1 +1,1 @@
-# VibeChess
+# CocoaChess

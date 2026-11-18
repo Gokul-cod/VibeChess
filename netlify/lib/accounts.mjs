@@ -1,5 +1,5 @@
 /**
- * Accounts for the Netlify deployment of VibeChess.
+ * Accounts for the Netlify deployment of CocoaChess.
  *
  * The same model as the Cloudflare worker: email + password, PBKDF2-SHA256
  * hashes, and an opaque session token in an HttpOnly cookie. Records are kept

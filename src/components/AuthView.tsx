@@ -50,7 +50,7 @@ export function AuthView({ onAuthenticated, onPrivacy, reason }: AuthViewProps) 
             See the <em>week</em>, not just the game.
           </h1>
           <p className="lede">
-            VibeChess pulls every game you played on Chess.com or Lichess, runs Stockfish 19 over each one and
+            CocoaChess pulls every game you played on Chess.com or Lichess, runs Stockfish 19 over each one and
             tells you what actually cost you points — then gives you three things to work on.
           </p>
           <ul className="auth__list">

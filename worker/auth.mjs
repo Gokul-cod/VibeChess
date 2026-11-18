@@ -1,5 +1,5 @@
 /**
- * Accounts for VibeChess.
+ * Accounts for CocoaChess.
  *
  * Email + password accounts stored in D1, PBKDF2-SHA256 password hashes, and
  * opaque session tokens in an HttpOnly cookie. No third-party auth service.

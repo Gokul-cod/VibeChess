@@ -1,9 +1,9 @@
 {
-  "name": "vibechess",
+  "name": "cocoachess",
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "VibeChess — Stockfish-powered game review and weekly chess reports",
+  "description": "CocoaChess — Stockfish-powered game review and weekly chess reports",
   "scripts": {
     "dev": "node scripts/dev.mjs",
     "dev:web": "vite",
@@ -16,7 +16,7 @@
     "engine:install": "bash scripts/install-stockfish.sh",
     "dev:netlify": "npx netlify-cli dev",
     "deploy:netlify": "npx netlify-cli deploy --build --prod",
-    "deploy:netlify:new": "npx netlify-cli deploy --build --prod --site-name vibechess"
+    "deploy:netlify:new": "npx netlify-cli deploy --build --prod --site-name cocoachess"
   },
   "dependencies": {
     "@fontsource-variable/fraunces": "^5.3.0",

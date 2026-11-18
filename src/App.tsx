@@ -155,7 +155,7 @@ export default function App() {
     return (
       <div className="boot">
         <div className="boot__mark" aria-hidden="true" />
-        <p>Warming up VibeChess…</p>
+        <p>Warming up CocoaChess…</p>
       </div>
     );
   }

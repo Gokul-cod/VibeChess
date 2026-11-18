@@ -1,5 +1,5 @@
 /**
- * Netlify Blobs access for the VibeChess API.
+ * Netlify Blobs access for the CocoaChess API.
  *
  * Blobs is Netlify's built-in key/value store, so accounts need no extra
  * database or account with a third party. The store is opened with strong
@@ -8,7 +8,7 @@
  */
 import { getStore } from '@netlify/blobs';
 
-export const STORE_NAME = 'vibechess';
+export const STORE_NAME = 'cocoachess';
 
 let opened = null;
 let failed = false;

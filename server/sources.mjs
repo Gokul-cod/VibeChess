@@ -1,4 +1,4 @@
-const USER_AGENT = 'VibeChess/1.0 (chess review and weekly reports)';
+const USER_AGENT = 'CocoaChess/1.0 (chess review and weekly reports)';
 
 export class SourceError extends Error {
   constructor(message, status = 502) {

@@ -16,7 +16,7 @@ const configuredBase = (import.meta.env.VITE_API_BASE ?? '').trim();
 export const API_BASE = configuredBase.replace(/\/+$/, '');
 export const CROSS_ORIGIN_API = API_BASE.length > 0;
 
-const TOKEN_KEY = 'vibechess.session';
+const TOKEN_KEY = 'cocoachess.session';
 
 export function apiUrl(path: string): string {
   return `${API_BASE}${path}`;

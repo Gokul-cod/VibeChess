@@ -25,7 +25,7 @@ export function Brand({ tagline = 'weekly chess reviews' }: { tagline?: string }
         <BrandMark />
       </span>
       <div>
-        <p className="brand__name">VibeChess</p>
+        <p className="brand__name">CocoaChess</p>
         <p className="brand__tag">{tagline}</p>
       </div>
     </div>
@@ -89,7 +89,7 @@ export function SiteFooter({
   return (
     <footer className="footer">
       <span>
-        VibeChess · Engine: Stockfish 19 ·{' '}
+        CocoaChess · Engine: Stockfish 19 ·{' '}
         {engineMode === 'browser' ? 'WebAssembly in your browser' : 'native analysis server'} ·{' '}
         <a
           className="footer__link"

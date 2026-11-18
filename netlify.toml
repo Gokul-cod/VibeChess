@@ -1,11 +1,11 @@
-# Netlify deployment for VibeChess.
+# Netlify deployment for CocoaChess.
 #
 # `npm run build` produces the static React app in dist/. The API is a single
 # Functions v2 handler in netlify/functions/api.mjs that serves every /api/*
 # route, with accounts stored in Netlify Blobs.
 #
 # Environment variables:
-#   VIBECHESS_ALLOWED_ORIGINS  comma-separated origins allowed to call this API
+#   COCOACHESS_ALLOWED_ORIGINS  comma-separated origins allowed to call this API
 #                              from another site, e.g. https://yourname.github.io.
 #                              Unset means same-origin only (the app hosted here).
 

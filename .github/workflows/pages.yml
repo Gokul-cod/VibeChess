@@ -1,18 +1,18 @@
-# Publishes the static VibeChess app to GitHub Pages.
+# Publishes the static CocoaChess app to GitHub Pages.
 #
 # The API is not here: Pages cannot run functions. Point the app at the API
 # host with a repository variable (Settings -> Secrets and variables -> Actions
 # -> Variables):
 #
-#   VIBECHESS_API_BASE = https://<your-api-host>     e.g. https://vibechess.netlify.app
+#   COCOACHESS_API_BASE = https://<your-api-host>     e.g. https://cocoachess.netlify.app
 #
 # The API host must allow this Pages origin for cross-site requests, and it
 # returns the session token in the sign-in response because browsers block
 # third-party cookies:
 #
-#   Netlify:    VIBECHESS_ALLOWED_ORIGINS = https://<owner>.github.io
+#   Netlify:    COCOACHESS_ALLOWED_ORIGINS = https://<owner>.github.io
 #   Cloudflare: ALLOWED_ORIGINS           = https://<owner>.github.io
-name: Deploy VibeChess to GitHub Pages
+name: Deploy CocoaChess to GitHub Pages
 
 on:
   push:
@@ -40,9 +40,9 @@ jobs:
       - run: npm ci
 
       - name: Check the API origin is configured
-        if: vars.VIBECHESS_API_BASE == ''
+        if: vars.COCOACHESS_API_BASE == ''
         run: |
-          echo "::error::Add a repository variable VIBECHESS_API_BASE with the API origin, for example https://vibechess.netlify.app"
+          echo "::error::Add a repository variable COCOACHESS_API_BASE with the API origin, for example https://cocoachess.netlify.app"
           exit 1
 
       # Project sites live at /<repo>/; a <owner>.github.io repository is at /.
@@ -57,7 +57,7 @@ jobs:
       - name: Build the static app
         run: npm run build:pages
         env:
-          VITE_API_BASE: ${{ vars.VIBECHESS_API_BASE }}
+          VITE_API_BASE: ${{ vars.COCOACHESS_API_BASE }}
 
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
