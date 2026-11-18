@@ -8,12 +8,14 @@
       name="description"
       content="Review your Chess.com and Lichess games with Stockfish 19. Import a PGN, get every move graded, and read plain-English coaching on what you missed."
     />
-    <meta name="theme-color" content="#1b100a" />
+    <meta name="theme-color" content="#0b1a25" />
     <script>
-      // Apply the saved appearance before first paint so the page never flashes the wrong theme.
+      // Apply the appearance before first paint so the page never flashes the wrong theme.
+      // With no saved choice the site opens in Glass; a saved "default" means Coffee.
       try {
         var savedTheme = localStorage.getItem('cocoachess.theme');
-        if (savedTheme && savedTheme !== 'default') document.documentElement.dataset.theme = savedTheme;
+        if (!savedTheme) document.documentElement.dataset.theme = 'glass';
+        else if (savedTheme !== 'default') document.documentElement.dataset.theme = savedTheme;
       } catch (error) {}
     </script>
     <link

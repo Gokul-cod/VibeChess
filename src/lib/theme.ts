@@ -1,11 +1,14 @@
 export type Theme = 'default' | 'dark' | 'light' | 'glass';
 
 export const THEMES: { id: Theme; label: string }[] = [
-  { id: 'default', label: 'Default' },
+  { id: 'glass', label: 'Glass' },
+  { id: 'default', label: 'Coffee' },
   { id: 'dark', label: 'Dark' },
   { id: 'light', label: 'Light' },
-  { id: 'glass', label: 'Glass' },
 ];
+
+/** The appearance a first-time visitor gets, before they pick anything. */
+export const DEFAULT_THEME: Theme = 'glass';
 
 const STORAGE_KEY = 'cocoachess.theme';
 
@@ -23,9 +26,9 @@ function isTheme(value: string | null): value is Theme {
 export function readTheme(): Theme {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
-    return isTheme(stored) ? stored : 'default';
+    return isTheme(stored) ? stored : DEFAULT_THEME;
   } catch {
-    return 'default';
+    return DEFAULT_THEME;
   }
 }
 
