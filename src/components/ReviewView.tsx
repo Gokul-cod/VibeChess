@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { AppearanceMenu } from './AppearanceMenu';
 import { winPercent, CLASSIFICATION_META, formatEval, formatDate, accuracyTone, playerRating } from '../lib/chess';
 import type { Classification, Color, ReviewSession } from '../types';
 import { Board } from './Board';
@@ -189,6 +190,7 @@ export function ReviewView({ session, onExit, onRerun }: ReviewViewProps) {
               </button>
             ))}
           </div>
+          <AppearanceMenu />
         </div>
       </header>
 

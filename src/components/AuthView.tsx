@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { signIn, signUp } from '../lib/auth';
 import type { AuthUser } from '../types';
+import { AppearanceMenu } from './AppearanceMenu';
 import { Cocoa } from './Coach';
 import { ReportIssue } from './ReportIssue';
 import { Brand } from './Shell';
@@ -77,6 +78,9 @@ export function AuthView({ onAuthenticated, onPrivacy, reason }: AuthViewProps) 
       </section>
 
       <section className="auth__panel">
+        <div className="auth__appearance">
+          <AppearanceMenu />
+        </div>
         <div className="auth__card">
           <div className="tabs" role="tablist" aria-label="Account">
             <button

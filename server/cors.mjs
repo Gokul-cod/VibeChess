@@ -10,6 +10,10 @@
  * origins, not paths: `https://someone.github.io`, not the repository URL.
  */
 
+/** Origins the project's own GitHub Pages sites are served from. Keeping these
+ *  built in means renaming the account or repository needs no server config. */
+const PROJECT_ORIGINS = ['https://gokul-cod.github.io', 'https://cocoachess.github.io'];
+
 function normalizeOrigin(origin) {
   return String(origin).trim().replace(/\/+$/, '');
 }
@@ -48,7 +52,8 @@ export function corsHeaders(request, configured) {
   }
 
   const sameHost = hostsOf(request).some((host) => host && host === originHost);
-  if (!sameHost && !allowedOrigins(configured).includes(normalizeOrigin(origin))) return {};
+  const origin_ = normalizeOrigin(origin);
+  if (!sameHost && !allowedOrigins(configured).includes(origin_) && !PROJECT_ORIGINS.includes(origin_)) return {};
 
   return {
     'Access-Control-Allow-Origin': origin,

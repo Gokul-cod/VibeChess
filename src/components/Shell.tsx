@@ -1,4 +1,5 @@
 import type { AuthUser } from '../types';
+import { AppearanceMenu } from './AppearanceMenu';
 import { ReportIssue } from './ReportIssue';
 
 export function BrandMark({ size = 26 }: { size?: number }) {
@@ -69,6 +70,7 @@ export function TopBar({ view, onNavigate, user, onSignOut }: TopBarProps) {
         <span className="topbar__email" title={user.email}>
           {user.email}
         </span>
+        <AppearanceMenu />
         <button className="ghost-link" onClick={onSignOut}>
           Sign out
         </button>

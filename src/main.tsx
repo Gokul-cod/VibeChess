@@ -4,6 +4,9 @@ import '@fontsource-variable/fraunces';
 import '@fontsource-variable/outfit';
 import './styles.css';
 import App from './App';
+import { initTheme } from './lib/theme';
+
+initTheme();
 
 const root = document.getElementById('root');
 if (!root) throw new Error('Root element missing');
