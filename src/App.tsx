@@ -203,7 +203,13 @@ export default function App() {
           onRerun={(depth) => void start(session.game, depth)}
         />
       )}
-      <SiteFooter onPrivacy={() => setShowPrivacy(true)} engineMode={engineMode} userEmail={user?.email ?? null} />
+      <SiteFooter
+        onPrivacy={() => setShowPrivacy(true)}
+        engineMode={engineMode}
+        userEmail={user?.email ?? null}
+        user={user}
+        onUserUpdated={setUser}
+      />
     </div>
   );
 }

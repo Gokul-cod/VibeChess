@@ -1,6 +1,7 @@
 import type { AuthUser } from '../types';
 import { AppearanceMenu } from './AppearanceMenu';
 import { ReportIssue } from './ReportIssue';
+import { TwoFactorButton } from './TwoFactor';
 
 export function BrandMark({ size = 26 }: { size?: number }) {
   return (
@@ -83,10 +84,14 @@ export function SiteFooter({
   onPrivacy,
   engineMode,
   userEmail,
+  user,
+  onUserUpdated,
 }: {
   onPrivacy: () => void;
   engineMode?: 'server' | 'browser' | null;
   userEmail?: string | null;
+  user?: AuthUser | null;
+  onUserUpdated?: (user: AuthUser) => void;
 }) {
   return (
     <footer className="footer">
@@ -106,6 +111,7 @@ export function SiteFooter({
         <button className="ghost-link" onClick={onPrivacy}>
           Privacy policy
         </button>
+        {user && onUserUpdated && <TwoFactorButton user={user} onUpdated={onUserUpdated} />}
         <ReportIssue userEmail={userEmail} engineMode={engineMode} />
         <span>Games read from Chess.com &amp; Lichess public APIs</span>
       </span>

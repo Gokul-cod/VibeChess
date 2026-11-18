@@ -3874,3 +3874,97 @@ button.inline-link {
 :root[data-theme='glass'] .pgn-textarea:focus {
   background: rgb(9 22 32 / 0.5);
 }
+
+/* ---------- one-time codes / two-factor ---------- */
+
+.otp-input {
+  letter-spacing: 0.24em;
+  font-variant-numeric: tabular-nums;
+  font-size: 1.02rem;
+  font-weight: 600;
+}
+
+.auth__step {
+  margin-bottom: 4px;
+}
+
+.auth__restart {
+  align-self: flex-start;
+  font-size: 0.82rem;
+}
+
+.twofa__trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.twofa__panel {
+  width: min(500px, 100%);
+}
+
+.twofa__text {
+  font-size: 0.88rem;
+  line-height: 1.55;
+  color: var(--muted);
+}
+
+.twofa__form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.twofa__steps {
+  margin: 0;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.twofa__secret {
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px dashed var(--line-strong);
+  background: rgb(var(--shade) / 0.22);
+  text-align: center;
+  overflow-x: auto;
+}
+
+.twofa__secret code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.92rem;
+  letter-spacing: 0.12em;
+  color: var(--amber-bright);
+  white-space: nowrap;
+}
+
+.twofa__uri {
+  align-self: flex-start;
+  font-size: 0.8rem;
+  color: var(--muted);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.twofa__codes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.twofa__codes code {
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: rgb(var(--shade) / 0.24);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.82rem;
+  letter-spacing: 0.08em;
+  text-align: center;
+  color: var(--cream);
+}

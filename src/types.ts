@@ -168,6 +168,7 @@ export interface AuthUser {
   email: string;
   name: string;
   createdAt: string;
+  twoFactor?: boolean;
 }
 
 export interface WeekPayload {

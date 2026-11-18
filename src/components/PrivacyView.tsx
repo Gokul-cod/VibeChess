@@ -41,6 +41,11 @@ export function PrivacyView({ onBack }: { onBack: () => void }) {
               the date the account was created. We never store the password itself and cannot recover it.
             </li>
             <li>
+              <strong>Two-factor authentication (optional).</strong> If you turn it on we store the secret key your
+              authenticator app uses and SHA-256 hashes of eight one-time recovery codes. We never store the 6-digit
+              codes the app shows, and you can turn the feature off at any time.
+            </li>
+            <li>
               <strong>Session cookie.</strong> A single cookie named <code>vc_session</code> holds a random session
               token so you stay signed in. The token is stored only as a SHA-256 hash in our database and expires
               after 30 days or when you sign out.

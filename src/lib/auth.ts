@@ -21,13 +21,63 @@ export async function fetchMe(): Promise<AuthUser | null> {
   }
 }
 
-export async function signIn(email: string, password: string): Promise<AuthUser> {
-  const data = await request<{ user: AuthUser }>('/api/auth/login', {
+export type SignInResult =
+  | { user: AuthUser }
+  | { twoFactor: true; ticket: string; hint: string };
+
+export async function signIn(email: string, password: string): Promise<SignInResult> {
+  const data = await request<{ user?: AuthUser; twoFactor?: boolean; ticket?: string; hint?: string }>(
+    '/api/auth/login',
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    },
+  );
+  if (data.twoFactor) return { twoFactor: true, ticket: data.ticket ?? '', hint: data.hint ?? '' };
+  if (!data.user) throw new Error('Sign in failed.');
+  return { user: data.user };
+}
+
+/** Second step: the code from the authenticator app, or a recovery code. */
+export async function verifyTwoFactor(ticket: string, code: string): Promise<AuthUser> {
+  const data = await request<{ user: AuthUser }>('/api/auth/2fa/verify', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password }),
+    body: JSON.stringify({ ticket, code }),
   });
   return data.user;
+}
+
+export interface TwoFactorSetup {
+  secret: string;
+  uri: string;
+  account: string;
+}
+
+export async function startTwoFactorSetup(): Promise<TwoFactorSetup> {
+  return request<TwoFactorSetup>('/api/auth/2fa/setup', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: '{}',
+  });
+}
+
+export async function enableTwoFactor(code: string): Promise<string[]> {
+  const data = await request<{ recoveryCodes?: string[] }>('/api/auth/2fa/enable', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ code }),
+  });
+  return data.recoveryCodes ?? [];
+}
+
+export async function disableTwoFactor(password: string): Promise<void> {
+  await request('/api/auth/2fa/disable', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ password }),
+  });
 }
 
 export async function signUp(name: string, email: string, password: string): Promise<AuthUser> {
