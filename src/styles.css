@@ -4180,3 +4180,32 @@ html {
     font-size: 0.74rem;
   }
 }
+
+/* Discord invite, sitting next to the sign-in button. */
+.topbar__discord {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: rgb(var(--shade) / 0.22);
+  color: var(--cream-dim);
+  text-decoration: none;
+  transition:
+    background 0.18s ease,
+    color 0.18s ease,
+    border-color 0.18s ease,
+    transform 0.18s var(--ease-out-soft);
+}
+
+.topbar__discord:hover {
+  background: rgb(var(--glow) / 0.14);
+  border-color: rgb(var(--glow) / 0.32);
+  color: var(--amber-bright);
+  transform: translateY(-1px);
+}
+
+.topbar__discord:active {
+  transform: scale(0.95);
+}
