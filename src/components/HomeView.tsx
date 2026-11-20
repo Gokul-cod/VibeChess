@@ -18,9 +18,9 @@ interface HomeViewProps {
 type Tab = Exclude<Source, 'pgn'> | 'pgn';
 
 const DEPTH_OPTIONS = [
-  { value: 12, label: 'Quick', hint: '~30s for a 90-move game' },
-  { value: 14, label: 'Balanced', hint: '~60s for a 90-move game' },
-  { value: 16, label: 'Deep', hint: '~2 min for a 90-move game' },
+  { value: 15, label: 'Quick', hint: '~2 min for a 90-move game' },
+  { value: 18, label: 'Balanced', hint: '~4 min for a 90-move game' },
+  { value: 21, label: 'Deep', hint: '~8 min for a 90-move game' },
 ];
 
 export function HomeView({ onStart, engineMode }: HomeViewProps) {
@@ -29,16 +29,16 @@ export function HomeView({ onStart, engineMode }: HomeViewProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<PlayerPayload | null>(null);
-  const [depth, setDepth] = useState(14);
+  const [depth, setDepth] = useState(18);
   const [pgnText, setPgnText] = useState('');
   const [imports, setImports] = useState<GameSummary[] | null>(null);
   const [importing, setImporting] = useState(false);
   const [dragging, setDragging] = useState(false);
   const fileInput = useRef<HTMLInputElement>(null);
 
-  // The hosted build analyses in the visitor's browser, so start at a lighter depth.
+  // Both deployments run the same engine in the visitor's browser.
   useEffect(() => {
-    if (engineMode === 'browser') setDepth(12);
+    if (engineMode === 'browser') setDepth(18);
   }, [engineMode]);
 
   const search = async (source: 'chesscom' | 'lichess', name: string) => {

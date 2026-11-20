@@ -1,6 +1,6 @@
 /** PGN helpers shared by the Node server, the hosted API worker and the browser. */
 
-export const DEPTHS = { quick: 12, balanced: 14, deep: 16 };
+export const DEPTHS = { quick: 15, balanced: 18, deep: 21 };
 export const MAX_PLIES = 260;
 
 export function splitGames(text) {

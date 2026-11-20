@@ -1,256 +1,394 @@
-const PIECE_NAMES = {
-  p: 'pawn',
-  n: 'knight',
-  b: 'bishop',
-  r: 'rook',
-  q: 'queen',
-  k: 'king',
-};
+/**
+ * Review commentary.
+ *
+ * Every sentence is built from something the review actually measured: the
+ * engine's evaluation, its principal variation, the material in that line, and
+ * the pieces left loose on the board. There are no canned one-liners.
+ */
+import { PIECE_NAMES } from './motifs.mjs';
 
-function pick(list, seed) {
-  return list[Math.abs(Math.round(seed)) % list.length];
+function cpFor(cp, color) {
+  return color === 'w' ? cp : -cp;
+}
+
+function mateFor(mate, color) {
+  if (mate == null) return null;
+  return color === 'w' ? mate : -mate;
 }
 
 function pawns(cp) {
-  return Math.abs(cp / 100).toFixed(1);
+  const value = Math.abs(cp) / 100;
+  return `${value.toFixed(1)} pawns`;
 }
 
-/** Short evaluation label from the perspective of `color`. */
-export function evalLabel(cp, color = 'w') {
-  const pov = color === 'w' ? cp : -cp;
-  const signed = `${pov > 0 ? '+' : '-'}${pawns(pov)}`;
-  if (pov >= 6000) return 'a forced win';
-  if (pov >= 250) return `completely winning (${signed})`;
-  if (pov >= 120) return `clearly better (${signed})`;
-  if (pov >= 40) return `slightly better (${signed})`;
-  if (pov > -40) return 'dead level';
-  if (pov > -120) return `slightly worse (${signed})`;
-  if (pov > -250) return `clearly worse (${signed})`;
-  if (pov > -6000) return `lost (${signed})`;
-  return 'getting mated';
+/** Signed evaluation from the mover's point of view: +1.2, -0.4, level. */
+export function evalNumber(cp, color = 'w') {
+  const raw = cpFor(cp ?? 0, color);
+  if (Math.abs(raw) >= 9000) return raw > 0 ? 'checkmate' : 'checkmated';
+  const pov = raw / 100;
+  if (Math.abs(pov) < 0.05) return 'level';
+  return `${pov > 0 ? '+' : ''}${pov.toFixed(1)}`;
 }
 
-export function mateLabel(mate, color) {
-  const pov = color === 'w' ? mate : -mate;
-  return pov > 0 ? `mate in ${pov}` : `you are getting mated in ${Math.abs(pov)}`;
+/** Plain-language standing from the mover's point of view. */
+export function standing(cp, color = 'w', mate = null) {
+  const matePov = mateFor(mate, color);
+  if (matePov != null) return matePov > 0 ? `mating in ${matePov}` : `getting mated in ${Math.abs(matePov)}`;
+  const pov = cpFor(cp ?? 0, color);
+  if (pov >= 9000) return 'checkmate';
+  if (pov <= -9000) return 'checkmated';
+  if (pov >= 400) return `winning (${evalNumber(cp, color)})`;
+  if (pov >= 150) return `clearly better (${evalNumber(cp, color)})`;
+  if (pov >= 60) return `slightly better (${evalNumber(cp, color)})`;
+  if (pov > -60) return 'level';
+  if (pov > -150) return `slightly worse (${evalNumber(cp, color)})`;
+  if (pov > -400) return `clearly worse (${evalNumber(cp, color)})`;
+  return `lost (${evalNumber(cp, color)})`;
+}
+
+export function moveLabel(move) {
+  return `${move.moveNumber}${move.color === 'w' ? '.' : '...'} ${move.san}`;
+}
+
+function lineSentence(move, limit = 5) {
+  const line = move.bestLine;
+  if (!line || line.length < 2) return '';
+  return `The engine's line runs ${line.slice(0, limit).join(' ')}.`;
+}
+
+function targetSentence(move) {
+  if (move.mateAfter != null) return '';
+  const targets = move.facts?.newTargets ?? [];
+  if (!targets.length) return '';
+  const first = targets[0];
+  const piece = PIECE_NAMES[first.type] ?? 'piece';
+  const more = targets.length > 1 ? ` and the ${PIECE_NAMES[targets[1].type] ?? 'piece'} on ${targets[1].square}` : '';
+  const undefended = first.defenders === 0 ? ', which is undefended' : '';
+  return ` It also targets the ${piece} on ${first.square}${undefended}${more}.`;
+}
+
+/** The single fact that explains what went wrong, in as few words as possible. */
+export function errorCause(move) {
+  const facts = move.facts ?? {};
+  const loose = facts.looseAfter ?? [];
+  const replySan = facts.replySan;
+  if (facts.replyMateIn != null && replySan) return `${replySan} forces mate in ${facts.replyMateIn}`;
+  if (loose.length && facts.replyCapturesLoose) {
+    const target = loose.find((piece) => piece.square === facts.replyCapturesLoose.square) ?? loose[0];
+    return `${replySan} wins the ${PIECE_NAMES[target.type] ?? 'piece'} on ${target.square}`;
+  }
+  if (loose.length) {
+    const target = loose[0];
+    return `the ${PIECE_NAMES[target.type] ?? 'piece'} on ${target.square} is left loose (${target.attackers} attacker${
+      target.attackers === 1 ? '' : 's'}, ${target.defenders} defender${target.defenders === 1 ? '' : 's'})`;
+  }
+  if (typeof facts.materialNet === 'number' && facts.materialNet <= -100) {
+    return `the engine's continuation leaves ${pawns(facts.materialNet)} of material behind`;
+  }
+  return `the evaluation falls from ${evalNumber(move.evalCpBefore, move.color)} to ${evalNumber(
+    move.evalCpAfter,
+    move.color,
+  )}`;
+}
+
+function adviceFor(move) {
+  const facts = move.facts ?? {};
+  if (facts.replyMateIn != null) {
+    return 'When your king comes under fire, check every checking move before anything else.';
+  }
+  if (facts.replyCapturesLoose) {
+    return 'Before you play a move, count how many times each of your pieces is attacked and defended. The one that does not balance is the one that gets taken.';
+  }
+  if (typeof facts.materialNet === 'number' && facts.materialNet <= -100) {
+    return 'Check every capture and every check on the board before you commit. Material does not come back by itself.';
+  }
+  if (move.classification === 'inaccuracy') {
+    return 'Nothing was lost tactically — the engine simply liked a more active move. Ask what your move improves before you play it.';
+  }
+  return 'Work backwards from your opponent\'s most forcing reply. That is where the engine found the refutation.';
 }
 
 function classificationBase(move) {
-  const { classification, san, color, loss, bestSan, bestLine, reply, ply } = move;
-  const side = color === 'w' ? 'White' : 'Black';
-  const line = bestLine && bestLine.length > 1 ? bestLine.slice(0, 5).join(' ') : null;
-  const nextBest = line ? `The line runs ${line}.` : '';
-  const loose = move.reply ? `Now ${reply.san} snaps off your ${PIECE_NAMES[reply.piece] ?? 'piece'}.` : '';
+  const { classification, san, color, bestSan, mateBefore, mateAfter, tags } = move;
+  const after = move.evalCpAfter;
+  const before = move.evalCpBefore;
+  const mateAfterPov = mateFor(mateAfter, color);
+  const evalSentence =
+    mateAfterPov != null
+      ? mateAfterPov > 0
+        ? `It is mate in ${mateAfterPov} for you.`
+        : `You are getting mated in ${Math.abs(mateAfterPov)}.`
+      : cpFor(after, color) >= 9000
+        ? 'That is checkmate — the game is over.'
+        : cpFor(after, color) <= -9000
+          ? 'That is checkmate against you.'
+          : `The evaluation sits at ${evalNumber(after, color)} for you.`;
+  const loss = Math.max(0, Math.round(move.loss ?? 0));
+
+  if (san.endsWith('#')) {
+    return {
+      title: 'Checkmate',
+      mood: 'proud',
+      body: `${san} finishes the game — there is nothing left to defend.`,
+    };
+  }
+
+  if (tags?.includes('missedMate')) {
+    const had = mateFor(mateBefore, color);
+    return {
+      title: 'A forced mate was on the board',
+      mood: 'alarmed',
+      body: `You had mate in ${had} before ${san}, and ${san} let it go. ${
+        bestSan ? `${bestSan} was the finish.` : ''
+      } ${lineSentence(move)}`.trim(),
+    };
+  }
 
   switch (classification) {
     case 'brilliant':
       return {
-        title: pick(['A sacrifice with flavour', 'That is a brilliant find', 'Bold, and it works'], ply),
+        title: 'A sacrifice that works',
         mood: 'proud',
-        body: `${san} gives up material on purpose and the position is still ${evalLabel(move.evalCpAfter, color)} for you. ${nextBest} ${
-          pick(['Most players would never find that.', 'That is the kind of move people remember.', 'A double shot of courage.'], ply)
-        }`,
+        body: `${san} gives up ${pawns(move.sacrifice || 0)} on purpose and you are still ${standing(
+          after,
+          color,
+          mateAfter,
+        )}. ${lineSentence(move)}`.trim(),
       };
     case 'great':
       return {
-        title: pick(['The only move that holds', 'A precise, narrow path', 'Nothing else worked'], ply),
+        title: 'The only move that holds',
         mood: 'proud',
-        body: `${san} is the single move that keeps your position together — everything else drops off sharply. ${nextBest}`.trim(),
+        body: `${san} is the one move that keeps the position together — everything else drops off sharply. You are ${standing(
+          after,
+          color,
+          mateAfter,
+        )}. ${lineSentence(move)}`.trim(),
       };
     case 'best':
       return {
-        title: pick(['Exactly right', 'Stockfish approves', 'Top of the menu'], ply),
+        title: 'The engine\'s top choice',
         mood: 'happy',
-        body: `${san} is the engine's first choice. The position is ${evalLabel(move.evalCpAfter, color)} for you. ${nextBest}`.trim(),
+        body: `${san} is exactly what Stockfish plays here.${targetSentence(move)} ${evalSentence} ${lineSentence(
+          move,
+        )}`.trim(),
       };
     case 'excellent':
       return {
-        title: pick(['Practically perfect', 'Very nearly the top pick', 'Almost flawless'], ply),
+        title: 'As good as the top move',
         mood: 'happy',
-        body: `${san} is essentially as good as ${bestSan ?? 'the top move'} — barely a whisker of difference. ${nextBest}`.trim(),
+        body: `${san} is within a whisker of ${bestSan ?? 'the top move'}. ${evalSentence}`.trim(),
       };
     case 'good':
       return {
-        title: pick(['Solid, not spectacular', 'A sound move', 'Nothing wrong with that'], ply),
+        title: 'Playable, but not the best',
         mood: 'neutral',
-        body: `${san} is fine, though ${bestSan ?? 'the top move'} was a touch more accurate. The position is ${evalLabel(
-          move.evalCpAfter,
+        body: `${san} is sound, though ${bestSan ?? 'the top move'} keeps you ${standing(
+          move.bestEval,
           color,
-        )} for you.`,
+        )} instead of ${standing(after, color)}. ${lineSentence(move)}`.trim(),
       };
     case 'inaccuracy':
-      return {
-        title: pick(['A little sloppy', 'This lets some air out', 'Small but real'], ply),
-        mood: 'thinking',
-        body: `${san} costs you about ${Math.round(loss)}% of your winning chances. ${
-          bestSan ?? 'The top move'
-        } was more precise — ${line ? `${line}.` : 'it keeps the position under control.'} ${loose}`.trim(),
-      };
     case 'mistake':
-      return {
-        title: pick(['This one hurts', 'A costly slip', 'The thread starts to fray'], ply),
-        mood: 'worried',
-        body: `${san} is a mistake: your winning chances drop by roughly ${Math.round(loss)}%, and the position swings from ${evalLabel(
-          move.evalCpBefore,
+    case 'blunder': {
+      const severity =
+        classification === 'blunder' ? 'is a blunder' : classification === 'mistake' ? 'is a mistake' : 'is an inaccuracy';
+      const title =
+        classification === 'blunder'
+          ? `Blunder: ${san} costs ${loss}%`
+          : classification === 'mistake'
+            ? `Mistake: ${san} costs ${loss}%`
+            : `Inaccuracy: ${san}`;
+      const pieces = [
+        `${san} ${severity}: ${loss}% of your winning chances, and you go from ${standing(
+          before,
           color,
-        )} to ${evalLabel(move.evalCpAfter, color)}. ${bestSan ? `You needed ${bestSan}.` : ''} ${nextBest} ${loose}`.trim(),
-      };
-    case 'blunder':
+          mateBefore,
+        )} to ${standing(after, color, mateAfter)}.`,
+        move.facts?.replySan ? `The refutation is ${move.facts.replySan}.` : '',
+        bestSan ? `${bestSan} was the move — it keeps you ${standing(move.bestEval, color)}.` : '',
+        lineSentence(move),
+        adviceFor(move),
+      ].filter(Boolean);
       return {
-        title: pick(['Ouch — that is a blunder', 'A big spill', 'That one really stings'], ply),
-        mood: 'alarmed',
-        body: `${san} gives away about ${Math.round(loss)}% of your winning chances, and the evaluation flips from ${evalLabel(
-          move.evalCpBefore,
-          color,
-        )} to ${evalLabel(move.evalCpAfter, color)}. ${bestSan ? `The move was ${bestSan}.` : ''} ${nextBest} ${loose}`.trim(),
+        title,
+        mood: classification === 'blunder' ? 'alarmed' : classification === 'mistake' ? 'worried' : 'thinking',
+        body: pieces.join(' '),
       };
+    }
     case 'forced':
       return {
-        title: 'Nothing else was legal',
+        title: 'Forced — nothing to grade',
         mood: 'neutral',
-        body: `${san} was the only legal move, so there is nothing to grade here. ${nextBest}`.trim(),
+        body: `${san} was the only legal move. ${lineSentence(move)}`.trim(),
       };
     default:
       return {
         title: 'Move reviewed',
         mood: 'neutral',
-        body: `${san} keeps the position ${evalLabel(move.evalCpAfter, color)} for you.`,
+        body: `${san} leaves you ${standing(after, color, mateAfter)}.`,
       };
   }
 }
 
-/** Produce the coach's take on a single move. */
+/** The coach's take on a single move. */
 export function moveCoach(move) {
   const base = classificationBase(move);
-  const tags = move.tags ?? [];
-
-  if (tags.includes('missedMate')) {
+  if (move.tags?.includes('missedWin') && !move.tags.includes('missedMate')) {
+    const lostWin = Math.max(0, Math.round(move.wpBefore - move.wpAfter));
     return {
-      title: 'Mate was right there',
-      mood: 'alarmed',
-      body: `You had ${mateLabel(move.mateBefore, move.color)} before ${move.san}. After it, the mate is gone. ${
-        move.bestSan ? `The kill was ${move.bestSan}.` : ''
-      } ${move.bestLine?.length ? `Line: ${move.bestLine.slice(0, 5).join(' ')}.` : ''}`.trim(),
-    };
-  }
-
-  if (tags.includes('missedWin')) {
-    return {
-      title: 'You let a winning game slip',
+      title: 'A winning position let slip',
       mood: 'worried',
-      body: `Before ${move.san} you were ${evalLabel(move.evalCpBefore, move.color)}; afterwards only ${evalLabel(
-        move.evalCpAfter,
+      body: `${move.san} throws away ${lostWin}% of your winning chances: you were ${standing(
+        move.evalCpBefore,
         move.color,
-      )}. ${move.bestSan ? `${move.bestSan} would have kept the grip.` : ''} ${
-        move.bestLine?.length > 1 ? `The line was ${move.bestLine.slice(0, 5).join(' ')}.` : ''
-      }`.trim(),
+        move.mateBefore,
+      )} and now you are ${standing(move.evalCpAfter, move.color, move.mateAfter)}. ${
+        move.bestSan ? `${move.bestSan} was the better try — it holds ${standing(move.bestEval, move.color)}.` : ''
+      } ${lineSentence(move)}`.trim(),
     };
   }
-
-  if (move.phase === 'opening' && move.ply <= 14 && ['best', 'excellent', 'good'].includes(move.classification)) {
-    const named = move.ply <= 10 && move.opening ? ` in the ${move.opening}` : '';
-    return {
-      title: pick(['Comfortable opening play', 'Book-ish and healthy', 'Sensible development'], move.ply),
-      mood: 'happy',
-      body: `${move.san} follows sound opening principles${named}. ${
-        move.bestLine?.length > 1 ? `Stockfish's line: ${move.bestLine.slice(0, 4).join(' ')}.` : ''
-      }`.trim(),
-    };
-  }
-
   return base;
 }
 
-export function buildSummary({ color, accuracy, counts, accuracyByPhase, opening, result, keyMoment, elo, name }) {
-  const grade = accuracy >= 92 ? 'A' : accuracy >= 84 ? 'B' : accuracy >= 74 ? 'C' : accuracy >= 62 ? 'D' : 'E';
-  const won = (color === 'w' && result === '1-0') || (color === 'b' && result === '0-1');
-  const drew = result === '1/2-1/2';
-  const takeaway = [];
-  const sideName = color === 'w' ? 'White' : 'Black';
-
-  let headline;
-  if (won && accuracy >= 85) headline = 'A win served clean, with hardly a wobble.';
-  else if (won) headline = 'You got the full point — now let us tidy up the rough edges.';
-  else if (drew) headline = 'A draw, and a fair reflection of the play.';
-  else if (accuracy >= 85) headline = 'A strong game that the result did not reward.';
-  else headline = 'Tough result, but there is plenty to work with here.';
-
-  if (counts.blunder > 0) {
-    takeaway.push({
-      title: `${counts.blunder} blunder${counts.blunder > 1 ? 's' : ''} to clean up`,
-      body: `Blunders cost you the most: ${counts.blunder} move${counts.blunder > 1 ? 's' : ''} where the evaluation fell off a cliff. Slow down on forcing sequences and check every capture and check before you play it.`,
-    });
-  }
-  if (counts.mistake > 0) {
-    takeaway.push({
-      title: 'Watch the quiet moves',
-      body: `${counts.mistake} mistake${counts.mistake > 1 ? 's' : ''} came mostly from drifting plans. Before a quiet move, ask what your opponent's best reply would be — the engine punished exactly those moments.`,
-    });
-  }
-  if (counts.brilliant + counts.great > 0) {
-    takeaway.push({
-      title: 'Real highlights to keep',
-      body: `You produced ${counts.brilliant} brilliant and ${counts.great} great move${
-        counts.brilliant + counts.great > 1 ? 's' : ''
-      }. Those were the moments where you found the only move — that instinct is your strength.`,
-    });
-  }
-  const phaseEntries = [
+function phaseEntries(accuracyByPhase) {
+  return [
     ['opening', 'opening'],
     ['middlegame', 'middlegame'],
     ['endgame', 'endgame'],
-  ].filter(([key]) => typeof accuracyByPhase[key] === 'number');
-  phaseEntries.sort((a, b) => accuracyByPhase[a[0]] - accuracyByPhase[b[0]]);
-  if (phaseEntries.length > 1) {
-    const [worst] = phaseEntries;
-    const best = phaseEntries[phaseEntries.length - 1];
-    takeaway.push({
-      title: `Your ${best[0]} was the sharpest part`,
-      body: `Accuracy by phase: ${phaseEntries
-        .map(([key]) => `${key} ${Math.round(accuracyByPhase[key])}%`)
-        .join(', ')}. The ${worst[0]} is where to spend your next study session.`,
-    });
-  }
-  if (counts.missedWin > 0) {
-    takeaway.push({
-      title: 'Finish the job',
-      body: `You reached a winning position ${counts.missedWin} time${counts.missedWin > 1 ? 's' : ''} and let it go. When you are winning, trade pieces, not pawns, and keep the king safe.`,
-    });
-  }
-  if (!takeaway.length) {
-    takeaway.push({
-      title: 'A clean sheet',
-      body: 'No blunders, no missed wins, no real mistakes. That is a game to be proud of — the next step is turning this level into your default.',
+  ]
+    .filter(([key]) => typeof accuracyByPhase?.[key] === 'number')
+    .sort((a, b) => accuracyByPhase[a[0]] - accuracyByPhase[b[0]]);
+}
+
+/**
+ * Report-card summary. `mistakes` is the player's own moves, already reviewed,
+ * so every takeaway can point at a real move and a real number.
+ */
+export function buildSummary({
+  color,
+  accuracy,
+  counts,
+  accuracyByPhase,
+  opening,
+  result,
+  keyMoment,
+  elo,
+  name,
+  mistakes = [],
+}) {
+  const grade = accuracy >= 92 ? 'A' : accuracy >= 84 ? 'B' : accuracy >= 74 ? 'C' : accuracy >= 62 ? 'D' : 'E';
+  const won = (color === 'w' && result === '1-0') || (color === 'b' && result === '0-1');
+  const drew = result === '1/2-1/2';
+  const sideName = color === 'w' ? 'White' : 'Black';
+  const ownMoves = mistakes.filter((move) => move && move.san);
+  const errors = ownMoves
+    .filter((move) => ['inaccuracy', 'mistake', 'blunder'].includes(move.classification))
+    .sort((a, b) => b.loss - a.loss);
+  const serious = ownMoves
+    .filter((move) => ['mistake', 'blunder'].includes(move.classification))
+    .sort((a, b) => b.loss - a.loss);
+
+  let headline;
+  if (won && accuracy >= 85) headline = 'A clean win — the engine barely found a wobble.';
+  else if (won) headline = 'The full point is yours; the errors in it are fixable.';
+  else if (drew) headline = 'A draw that matches the play.';
+  else if (accuracy >= 85) headline = 'A well-played game that the result did not reward.';
+  else headline = 'A tough result with clear, specific things to fix.';
+
+  const takeaways = [];
+
+  if (serious.length) {
+    const listed = serious
+      .slice(0, 3)
+      .map((move) => `${moveLabel(move)} (${move.classification}, −${Math.round(move.loss)}%) — ${errorCause(move)}`)
+      .join('; ');
+    takeaways.push({
+      title: serious.length === 1 ? 'The move that decided it' : `Your ${serious.length} serious errors`,
+      body: `In order of cost: ${listed}. Each one is a single position you can replay from the move list and solve again.`,
     });
   }
 
-  const biggest = keyMoment
-    ? `The turning point was move ${keyMoment.moveNumber}${keyMoment.color === 'w' ? '.' : '...'} ${keyMoment.san} — ${
-        keyMoment.classification === 'blunder' ? 'a blunder' : keyMoment.classification === 'mistake' ? 'a mistake' : 'a slip'
-      } that cost ${Math.round(keyMoment.loss)}% of your winning chances.`
-    : 'No single moment decided this game — it was a steady grind.';
+  const looseCount = serious.filter((move) => move.facts?.replyCapturesLoose).length;
+  const materialCount = serious.filter(
+    (move) => !move.facts?.replyCapturesLoose && typeof move.facts?.materialNet === 'number' && move.facts.materialNet <= -100,
+  ).length;
+  if (looseCount >= 2) {
+    takeaways.push({
+      title: 'The pattern: loose pieces',
+      body: `${looseCount} of your ${serious.length} serious errors were pieces left attacked more often than defended — ${serious
+        .filter((move) => move.facts?.replyCapturesLoose)
+        .slice(0, 2)
+        .map((move) => `${moveLabel(move)} (${move.facts.replySan})`)
+        .join(' and ')}. Before each move, run through your own pieces and ask which one your opponent can hit next.`,
+    });
+  } else if (materialCount >= 2) {
+    takeaways.push({
+      title: 'The pattern: material',
+      body: `${materialCount} of your ${serious.length} serious errors lost material in the engine's continuation. In each of those positions a forcing move existed for the opponent — check every capture and check on the board before you play yours.`,
+    });
+  }
+
+  const phases = phaseEntries(accuracyByPhase);
+  if (phases.length > 1) {
+    const [worst, best] = [phases[0], phases[phases.length - 1]];
+    const spread = accuracyByPhase[best[0]] - accuracyByPhase[worst[0]];
+    if (spread >= 3) {
+      const example = serious.find((move) => phaseKeyFor(move) === worst[0]);
+      takeaways.push({
+        title: `Weakest phase: ${worst[0]} (${Math.round(accuracyByPhase[worst[0]])}%)`,
+        body: `Your accuracy ran ${phases
+          .map(([key]) => `${key} ${Math.round(accuracyByPhase[key])}%`)
+          .join(', ')}. ${example ? `${moveLabel(example)} is the clearest example of the ${worst[0]} problem.` : ''} ${best[0].replace(
+          /^./,
+          (letter) => letter.toUpperCase(),
+        )} was your sharpest phase (${Math.round(accuracyByPhase[best[0]])}%).`.replace(/\s+/g, ' '),
+      });
+    }
+  }
+
+  if (counts.missedWin > 0) {
+    takeaways.push({
+      title: `${counts.missedWin} winning position${counts.missedWin > 1 ? 's' : ''} let go`,
+      body: `You were winning and let the evaluation drop in ${counts.missedWin} position${
+        counts.missedWin > 1 ? 's' : ''
+      }. In those spots the test is simple: find your opponent's one active piece and take it away before you push anything.`,
+    });
+  }
+
+  if (!takeaways.length) {
+    takeaways.push({
+      title: 'Nothing to repair',
+      body: `No mistakes and no blunders: ${counts.best} best, ${counts.excellent} excellent and ${counts.good} good moves out of ${
+        ownMoves.length
+      } reviewed. The next step is making this your normal level rather than a good day.`,
+    });
+  }
+
+  const worstMove = errors[0] ?? keyMoment ?? null;
+  const biggest = worstMove
+    ? `The costliest moment was ${moveLabel(worstMove)} — ${errorCause(worstMove)}.`
+    : 'No single moment decided this game.';
 
   return {
     headline,
     grade,
     mood: grade === 'A' || grade === 'B' ? 'proud' : grade === 'C' ? 'thinking' : 'worried',
     accuracy: Math.round(accuracy * 10) / 10,
-    takeaways: takeaway.slice(0, 3),
+    takeaways: takeaways.slice(0, 3),
     turningPoint: biggest,
     intro: `${name ? name : sideName}${elo ? ` (${elo})` : ''} finished with ${accuracy.toFixed(1)}% accuracy. ${biggest}`,
     resultLine: won ? 'You won.' : drew ? 'You drew.' : 'You lost.',
   };
 }
 
-/** A short, in-character line for the loading screen while the engine works. */
+function phaseKeyFor(move) {
+  if (move.phase) return move.phase;
+  return 'middlegame';
+}
+
+/** Loading copy while the engine grinds. */
 export function analysisBanter(step, total) {
-  const lines = [
-    'Warming up the grinder — Stockfish 19 is reading the position.',
-    'Checking who stood better in every position. Bear with me.',
-    'Pouring over the tactics. This is the good part.',
-    'Found something interesting on move 12, keep your cup close.',
-    'Almost done — I am double-checking the quiet moves.',
-  ];
-  const index = Math.min(lines.length - 1, Math.floor((step / Math.max(total, 1)) * lines.length));
-  return lines[index];
+  const pct = total > 0 ? Math.min(100, Math.round((step / total) * 100)) : 0;
+  return `Stockfish 19 is analysing position ${step} of ${total} (${pct}%).`;
 }

@@ -20,7 +20,7 @@ const runReview = reviewGame as unknown as (args: {
 
 // Depth requests stay the same, but each position gets a clock so long searches
 // cannot stall a whole game on a single sharp position.
-const TIME_BUDGET: Record<number, number> = { 12: 300, 14: 600, 16: 1200 };
+const TIME_BUDGET: Record<number, number> = { 15: 1200, 18: 3000, 21: 6000 };
 
 let instance: WebEngine | null = null;
 let loading: Promise<WebEngine> | null = null;

@@ -15,9 +15,9 @@ interface ReviewViewProps {
 }
 
 const DEPTHS = [
-  { value: 12, label: 'Quick' },
-  { value: 14, label: 'Balanced' },
-  { value: 16, label: 'Deep' },
+  { value: 15, label: 'Quick' },
+  { value: 18, label: 'Balanced' },
+  { value: 21, label: 'Deep' },
 ];
 
 // Every grade a move can receive, so the tally accounts for every move in the game.
@@ -363,6 +363,9 @@ export function ReviewView({ session, onExit, onRerun }: ReviewViewProps) {
                   <p className="grade__headline">{playerReport.summary.headline}</p>
                   <p className="grade__sub">
                     {playerReport.accuracy}% accuracy · {playerReport.summary.resultLine}
+                  </p>
+                  <p className="grade__note">
+                    Lichess accuracy formula · {report.engine.name} at depth {report.engine.depth}
                   </p>
                 </div>
               </div>

@@ -1,5 +1,7 @@
 import { Chess } from 'chess.js';
 import { moveCoach, buildSummary } from './coach.mjs';
+import { gameAccuracy, moveAccuracy, winPercentFromScore } from './accuracy.mjs';
+import { lineMaterial, loosePieces, newTargets } from './motifs.mjs';
 import { splitGames, parsePgnHeaders, DEPTHS, MAX_PLIES } from './pgn.mjs';
 
 export { splitGames, parsePgnHeaders, DEPTHS, MAX_PLIES };
@@ -93,13 +95,6 @@ export function scoreToCp(line) {
   return line.cp ?? 0;
 }
 
-function winProbability(cpWhite) {
-  if (cpWhite >= 6000) return 0.999;
-  if (cpWhite <= -6000) return 0.001;
-  const capped = Math.max(-1000, Math.min(1000, cpWhite));
-  return 1 / (1 + Math.exp(-0.00368208 * capped));
-}
-
 function uciToSan(fen, uci) {
   if (!uci || uci.length < 4) return null;
   try {
@@ -135,13 +130,16 @@ function findCapturedPiece(fen, uci) {
 }
 
 /** Score for a position where the engine has no line (checkmate / stalemate). */
-function terminalEval(fen) {
+function terminalScore(fen) {
   try {
     const chess = new Chess(fen);
-    if (chess.isCheckmate()) return chess.turn() === 'w' ? -10000 : 10000;
-    return 0;
+    if (chess.isCheckmate()) {
+      const whiteMated = chess.turn() === 'w';
+      return { cp: whiteMated ? -10000 : 10000, mate: whiteMated ? -1 : 1 };
+    }
+    return { cp: 0, mate: null };
   } catch {
-    return 0;
+    return { cp: 0, mate: null };
   }
 }
 
@@ -166,13 +164,14 @@ function classifyMove(context) {
   if (legalMoves <= 1) return { classification: 'forced', isBest: false, rank, tags: [] };
 
   const tags = [];
-  if (wpBeforeMover >= 0.82 && wpAfterMover <= 0.6) tags.push('missedWin');
+  // Win chances arrive as percentages (0-100), matching the Lichess curve.
+  if (wpBeforeMover >= 82 && wpAfterMover <= 60) tags.push('missedWin');
 
-  if (sacrifice >= 250 && wpAfterMover >= 0.55 && (isBest || rank === 2)) {
+  if (sacrifice >= 250 && wpAfterMover >= 55 && (isBest || rank === 2)) {
     tags.push('sacrifice');
     return { classification: 'brilliant', isBest, rank, tags };
   }
-  if (isBest && isOnlyMove && wpBeforeMover > 0.15 && wpBeforeMover < 0.85) {
+  if (isBest && isOnlyMove && wpBeforeMover > 15 && wpBeforeMover < 85) {
     return { classification: 'great', isBest, rank, tags };
   }
   if (loss >= 18) return { classification: 'blunder', isBest, rank, tags };
@@ -181,14 +180,6 @@ function classifyMove(context) {
   if (isBest) return { classification: 'best', isBest, rank, tags };
   if (loss < 1.5 && rank <= 2) return { classification: 'excellent', isBest, rank, tags };
   return { classification: 'good', isBest, rank, tags };
-}
-
-function accuracyFor(wpBeforeMover, wpAfterMover) {
-  const before = wpBeforeMover * 100;
-  const after = wpAfterMover * 100;
-  if (after >= before) return 100;
-  const value = 103.1668 * Math.exp(-0.04354 * (before - after)) - 3.1669;
-  return Math.max(0, Math.min(100, value));
 }
 
 function openingFromHeaders(headers) {
@@ -235,47 +226,45 @@ export async function reviewGame({ pgn, depth = DEPTHS.balanced, movetime = 0, e
   const opening = openingFromHeaders(headers);
   const reviewedMoves = [];
   const players = {
-    w: { name: headers.White ?? 'White', elo: headers.WhiteElo ?? null, counts: emptyCounts(), accuracies: [], phases: {} },
-    b: { name: headers.Black ?? 'Black', elo: headers.BlackElo ?? null, counts: emptyCounts(), accuracies: [], phases: {} },
+    w: { name: headers.White ?? 'White', elo: headers.WhiteElo ?? null, counts: emptyCounts(), accuracies: [], phaseSeries: {} },
+    b: { name: headers.Black ?? 'Black', elo: headers.BlackElo ?? null, counts: emptyCounts(), accuracies: [], phaseSeries: {} },
   };
+
+  // White-POV evaluation and win chance for every position in the game.
+  const evals = positions.map((fen, index) => {
+    if (index === 0) return { cp: 0, mate: null };
+    const line = analyses[index]?.lines?.[0] ?? null;
+    const mover = moves[index - 1].color;
+    const sign = mover === 'w' ? -1 : 1;
+    if (!line) return terminalScore(fen);
+    return {
+      cp: scoreToCp({ cp: line.cp, mate: line.mate }) * sign,
+      mate: line.mate != null ? line.mate * sign : null,
+    };
+  });
+  const winPercents = evals.map((entry) => winPercentFromScore(entry.cp, entry.mate));
+  const accuracyReport = gameAccuracy(winPercents, moves.map((move) => move.color));
 
   for (let i = 0; i < moves.length; i++) {
     const move = moves[i];
     const before = analyses[i];
     const after = analyses[i + 1];
     const turn = move.color;
-    const sign = turn === 'w' ? 1 : -1;
 
     const bestLine = before?.lines?.[0] ?? null;
     const secondLine = before?.lines?.[1] ?? null;
     const afterLine = after?.lines?.[0] ?? null;
 
-    // Stockfish scores are from the side-to-move's point of view. The side to move
-    // flips after the played move, so the two positions need opposite signs to be
-    // compared. Everything downstream is stored from White's point of view.
-    const afterSideSign = turn === 'w' ? -1 : 1;
-    const evalCpBefore = bestLine ? scoreToCp({ cp: bestLine.cp, mate: bestLine.mate }) * sign : 0;
-    const evalCpAfter = afterLine
-      ? scoreToCp({ cp: afterLine.cp, mate: afterLine.mate }) * afterSideSign
-      : terminalEval(move.fenAfter);
-    const mateBefore = bestLine?.mate != null ? bestLine.mate * sign : null;
-    const mateAfter = afterLine?.mate != null ? afterLine.mate * afterSideSign : null;
+    // Stockfish reports from the side to move. Everything stored is White POV.
+    const evalCpBefore = evals[i].cp;
+    const evalCpAfter = evals[i + 1].cp;
+    const mateBefore = evals[i].mate;
+    const mateAfter = evals[i + 1].mate;
 
-    const wpBeforeWhite = winProbability(evalCpBefore);
-    const wpAfterWhite = winProbability(evalCpAfter);
-    const wpBeforeMover = turn === 'w' ? wpBeforeWhite : 1 - wpBeforeWhite;
-    const wpAfterMover = turn === 'w' ? wpAfterWhite : 1 - wpAfterWhite;
-    // A move that stays winning (or stays lost) costs less than the raw win%
-    // delta suggests: +10.1 to +3.4 is still a won game, not a blunder.
-    const moverEvalBefore = evalCpBefore * sign;
-    const moverEvalAfter = evalCpAfter * sign;
-    const sameSideDominant =
-      (moverEvalBefore >= 300 && moverEvalAfter >= 300) || (moverEvalBefore <= -300 && moverEvalAfter <= -300);
-    const mateBothSides =
-      mateBefore != null && mateAfter != null && Math.sign(mateBefore) === Math.sign(mateAfter) && Math.sign(mateBefore) * sign > 0;
-    const lossScale = mateBothSides ? 0.15 : sameSideDominant ? 0.35 : 1;
-    const loss = Math.max(0, (wpBeforeMover - wpAfterMover) * 100 * lossScale);
-    const wpAfterEffective = wpBeforeMover - loss / 100;
+    // The Lichess definition of a move's cost: the raw drop in win probability.
+    const wpBeforeMover = turn === 'w' ? winPercents[i] : 100 - winPercents[i];
+    const wpAfterMover = turn === 'w' ? winPercents[i + 1] : 100 - winPercents[i + 1];
+    const loss = Math.max(0, wpBeforeMover - wpAfterMover);
 
     // The opponent's best answer. If it wins material and we are still fine,
     // then the move we just played was a sacrifice.
@@ -328,13 +317,14 @@ export async function reviewGame({ pgn, depth = DEPTHS.balanced, movetime = 0, e
       legalMoves = 2;
     }
 
+    const bestUci = bestLine?.pv?.[0] ?? before?.bestmove ?? null;
     const { classification, rank, tags } = classifyMove({
       playedUci: move.uci,
       playedSan: move.san,
-      bestUci: bestLine?.pv?.[0] ?? before?.bestmove ?? null,
+      bestUci,
       lines: before?.lines ?? [],
       wpBeforeMover,
-      wpAfterMover: wpAfterEffective,
+      wpAfterMover,
       loss,
       sacrifice: offeredMaterial,
       legalMoves,
@@ -349,11 +339,27 @@ export async function reviewGame({ pgn, depth = DEPTHS.balanced, movetime = 0, e
       tags.push('missedMate');
     }
 
-    const bestSan = uciToSan(move.fenBefore, bestLine?.pv?.[0] ?? null);
+    const bestSan = uciToSan(move.fenBefore, bestUci);
     const bestLineSan = pvToSan(move.fenBefore, bestLine?.pv ?? [], 5);
 
     const phase = phaseFor(i, move.fenAfter, moves.length);
-    const accuracy = accuracyFor(wpBeforeMover, wpAfterEffective);
+    const accuracy = moveAccuracy(wpBeforeMover, wpAfterMover);
+
+    // Facts the commentary is written from: what the move gave up, what the
+    // engine's line does to the material, and which pieces are left loose.
+    const replyUci = afterLine?.pv?.[0] ?? null;
+    const looseAfter = loosePieces(move.fenAfter, turn).slice(0, 3);
+    const replyTarget = replyUci ? replyUci.slice(2, 4) : null;
+    const facts = {
+      materialNet: afterLine ? lineMaterial(move.fenAfter, afterLine.pv, turn, 4) : 0,
+      bestMaterialNet: bestLine ? lineMaterial(move.fenBefore, bestLine.pv, turn, 4) : 0,
+      looseAfter,
+      looseBefore: loosePieces(move.fenBefore, turn).slice(0, 3),
+      newTargets: newTargets(move.fenBefore, bestUci, turn),
+      replySan: replyUci ? uciToSan(move.fenAfter, replyUci) : null,
+      replyCapturesLoose: replyTarget ? looseAfter.find((piece) => piece.square === replyTarget) ?? null : null,
+      replyMateIn: afterLine?.mate != null && afterLine.mate > 0 ? afterLine.mate : null,
+    };
 
     const reviewed = {
       ply: move.ply,
@@ -378,19 +384,20 @@ export async function reviewGame({ pgn, depth = DEPTHS.balanced, movetime = 0, e
       evalCpAfter,
       mateBefore,
       mateAfter,
-      wpBefore: Math.round(wpBeforeMover * 1000) / 10,
-      wpAfter: Math.round(wpAfterMover * 1000) / 10,
+      wpBefore: Math.round(wpBeforeMover * 10) / 10,
+      wpAfter: Math.round(wpAfterMover * 10) / 10,
       bestSan,
       bestUci: bestLine?.pv?.[0] ?? null,
       bestLine: bestLineSan,
       secondSan: uciToSan(move.fenBefore, secondLine?.pv?.[0] ?? null),
-      secondEval: secondLine ? scoreToCp({ cp: secondLine.cp, mate: secondLine.mate }) : null,
-      bestEval: bestLine ? scoreToCp({ cp: bestLine.cp, mate: bestLine.mate }) : null,
+      secondEval: secondLine ? scoreToCp({ cp: secondLine.cp, mate: secondLine.mate }) * (turn === 'w' ? 1 : -1) : null,
+      bestEval: bestLine ? scoreToCp({ cp: bestLine.cp, mate: bestLine.mate }) * (turn === 'w' ? 1 : -1) : null,
       reply:
         replyGain <= -150 && replyPiece && loss >= 3.5
           ? { san: uciToSan(move.fenAfter, opponentReply), piece: replyPiece }
           : null,
       sacrifice: offeredMaterial,
+      facts,
     };
 
     reviewed.coach = moveCoach(reviewed);
@@ -403,8 +410,9 @@ export async function reviewGame({ pgn, depth = DEPTHS.balanced, movetime = 0, e
       if (tag === 'missedWin') player.counts.missedWin += 1;
       if (tag === 'missedMate') player.counts.missedMate += 1;
     }
-    player.phases[phase] = player.phases[phase] ?? [];
-    player.phases[phase].push(accuracy);
+    player.phaseSeries[phase] = player.phaseSeries[phase] ?? { winPercents: [], colors: [] };
+    player.phaseSeries[phase].winPercents.push(wpBeforeMover, wpAfterMover);
+    player.phaseSeries[phase].colors.push(turn);
 
     reviewedMoves.push(reviewed);
   }
@@ -412,12 +420,10 @@ export async function reviewGame({ pgn, depth = DEPTHS.balanced, movetime = 0, e
   const playerSummary = {};
   for (const color of ['w', 'b']) {
     const player = players[color];
-    const accuracy = player.accuracies.length
-      ? player.accuracies.reduce((sum, value) => sum + value, 0) / player.accuracies.length
-      : 0;
+    const accuracy = accuracyReport[color] ?? 0;
     const accuracyByPhase = {};
-    for (const [phase, values] of Object.entries(player.phases)) {
-      accuracyByPhase[phase] = values.reduce((sum, value) => sum + value, 0) / values.length;
+    for (const [phase, series] of Object.entries(player.phaseSeries)) {
+      accuracyByPhase[phase] = gameAccuracy(series.winPercents, series.colors)[color] ?? 0;
     }
     const ownMoves = reviewedMoves.filter((move) => move.color === color);
     const keyMoment = [...ownMoves].sort((a, b) => b.loss - a.loss)[0] ?? null;
@@ -431,6 +437,7 @@ export async function reviewGame({ pgn, depth = DEPTHS.balanced, movetime = 0, e
       keyMoment,
       elo: player.elo,
       name: player.name,
+      mistakes: ownMoves,
     });
     playerSummary[color] = {
       name: player.name,

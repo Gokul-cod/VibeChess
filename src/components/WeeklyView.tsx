@@ -12,7 +12,7 @@ type Status = 'idle' | 'running' | 'done' | 'error';
 
 const TALLY_ORDER: Classification[] = ['brilliant', 'great', 'best', 'excellent', 'good', 'inaccuracy', 'mistake', 'blunder', 'forced'];
 const PHASES = ['opening', 'middlegame', 'endgame'] as const;
-const DEPTH = 12;
+const DEPTH = 14;
 
 function isoDay(date: Date) {
   return date.toISOString().slice(0, 10);
@@ -193,7 +193,7 @@ export function WeeklyView({ onOpenGame }: WeeklyViewProps) {
             Build weekly report
           </button>
           <p className="weekly__hint">
-            Up to 12 games · Stockfish 19 at depth {DEPTH} · about a minute, entirely in your browser.
+            Up to 12 games · Stockfish 19 at depth {DEPTH} · a few minutes, entirely in your browser.
           </p>
         </div>
       </section>
@@ -492,7 +492,7 @@ function WeeklyReportView({
       </section>
 
       <p className="weekly__disclaimer">
-        Analysis runs locally with Stockfish 19 Lite (WebAssembly) at depth {report.depth}. Grades are computed from
+        Analysis runs locally with Stockfish 19 (WebAssembly) at depth {report.depth}. Grades are computed from
         win-probability loss, so a blunder in a lost position costs less than one that throws a win.
       </p>
     </div>

@@ -14,7 +14,7 @@ const build = buildWeeklyReport as unknown as (args: {
 
 export const WEEK_MAX_GAMES = 12;
 // Weekly reviews cover a lot of positions, so each one gets a tight clock.
-const WEEK_MOVETIME = 200;
+const WEEK_MOVETIME = 600;
 
 export interface WeekProgress {
   stage: 'fetching' | 'reviewing';

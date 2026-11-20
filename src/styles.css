@@ -1764,6 +1764,14 @@ a:hover {
   margin-top: 3px;
 }
 
+.grade__note {
+  font-size: 0.7rem;
+  line-height: 1.45;
+  color: var(--muted);
+  opacity: 0.85;
+  margin-top: 6px;
+}
+
 .phasebars {
   display: flex;
   flex-direction: column;

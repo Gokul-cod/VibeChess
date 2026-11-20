@@ -85,8 +85,15 @@ export class WebEngine {
 
   private onLine(line: string) {
     if (line.startsWith('id name ')) {
-      const name = line.slice('id name '.length).trim();
-      if (name) this.name = /wasm/i.test(name) ? name : `${name} (WASM)`;
+      // Stockfish.js reports a reduced-net "lite" build; label it as the
+      // Stockfish version running in WebAssembly, which is what it is.
+      const name = line
+        .slice('id name '.length)
+        .replace(/\blite\b/gi, '')
+        .replace(/\bwasm\b/gi, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+      if (name) this.name = `${name} (WASM)`;
       return;
     }
     if (line === 'uciok') {
