@@ -4331,3 +4331,173 @@ html {
 .topbar__discord:active {
   transform: scale(0.95);
 }
+
+/* ============================================================
+   Guides — index of the Lichess Learn catalogue
+   ============================================================ */
+
+.guides {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 18px 28px 60px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.guides__intro {
+  padding: 26px 0 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.guides__intro h1 {
+  font-size: clamp(2.4rem, 4.6vw, 3.6rem);
+  line-height: 1.03;
+  letter-spacing: -0.03em;
+}
+
+.guides__intro h1 em {
+  font-style: italic;
+  color: var(--amber);
+}
+
+.guides__lede {
+  max-width: 68ch;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.guides__note {
+  font-size: 0.82rem;
+  color: var(--muted-2);
+}
+
+.guides__group {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.guides__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.guides__head h2 {
+  margin-top: 4px;
+  font-size: 1.5rem;
+}
+
+.guides__count {
+  flex: none;
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted-2);
+  white-space: nowrap;
+}
+
+.guides__blurb {
+  max-width: 72ch;
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: var(--muted);
+}
+
+.guides__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 10px;
+}
+
+.guide {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line);
+  background: rgb(var(--shade) / 0.18);
+  color: var(--cream-dim);
+  text-decoration: none;
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease,
+    transform 0.18s ease;
+}
+
+.guide:hover {
+  background: rgb(var(--glow) / 0.09);
+  border-color: rgb(var(--glow) / 0.28);
+  transform: translateY(-1px);
+}
+
+.guide:active {
+  transform: translateY(0) scale(0.995);
+}
+
+.guide__index {
+  flex: none;
+  font-size: 0.72rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted-3);
+}
+
+.guide__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.guide__title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--cream);
+}
+
+.guide__blurb {
+  font-size: 0.78rem;
+  line-height: 1.4;
+  color: var(--muted);
+}
+
+.guide__arrow {
+  margin-left: auto;
+  display: flex;
+  color: var(--muted-3);
+  transition: color 0.18s ease;
+}
+
+.guide:hover .guide__arrow {
+  color: var(--amber);
+}
+
+.guides__credit {
+  padding-top: 4px;
+  font-size: 0.78rem;
+  text-align: center;
+  color: var(--muted-3);
+}
+
+.guides__credit a {
+  color: var(--amber);
+}
+
+@media (max-width: 720px) {
+  .guides {
+    padding: 12px 18px 50px;
+  }
+
+  .guides__grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -34,7 +34,7 @@ export function Brand({ tagline = 'weekly chess reviews' }: { tagline?: string }
   );
 }
 
-export type AppView = 'home' | 'weekly';
+export type AppView = 'home' | 'weekly' | 'guides';
 
 interface TopBarProps {
   view: AppView;
@@ -83,6 +83,13 @@ export function TopBar({ view, onNavigate, user, onSignIn, onSignOut }: TopBarPr
           aria-current={view === 'weekly' ? 'page' : undefined}
         >
           Weekly report
+        </button>
+        <button
+          className={`topnav__tab${view === 'guides' ? ' is-active' : ''}`}
+          onClick={() => onNavigate('guides')}
+          aria-current={view === 'guides' ? 'page' : undefined}
+        >
+          Guides
         </button>
       </nav>
       <div className="topbar__user">

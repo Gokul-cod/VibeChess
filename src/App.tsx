@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AuthView } from './components/AuthView';
+import { GuidesView } from './components/GuidesView';
 import { HomeView } from './components/HomeView';
 import { PrivacyView } from './components/PrivacyView';
 import { ReviewView } from './components/ReviewView';
@@ -197,6 +198,8 @@ export default function App() {
       <div className={session ? 'view view--hidden' : 'view'}>
         {view === 'weekly' ? (
           <WeeklyView onOpenGame={start} />
+        ) : view === 'guides' ? (
+          <GuidesView />
         ) : (
           <HomeView onStart={start} engineMode={engineMode} />
         )}
