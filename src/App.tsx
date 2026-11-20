@@ -15,6 +15,7 @@ export default function App() {
   const [user, setUser] = useState<AuthUser | null | undefined>(undefined);
   const [view, setView] = useState<AppView>('home');
   const [showPrivacy, setShowPrivacy] = useState(false);
+  const [showAuth, setShowAuth] = useState(false);
   const [session, setSession] = useState<ReviewSession | null>(null);
   const [engineMode, setEngineMode] = useState<EngineMode | null>(null);
   const unsubscribe = useRef<(() => void) | null>(null);
@@ -164,13 +165,17 @@ export default function App() {
     return <PrivacyView onBack={() => setShowPrivacy(false)} />;
   }
 
-  if (!user) {
+  // Signing in is optional: the site is fully usable signed out, and the auth
+  // screen is only shown when someone asks for it from the top bar.
+  if (!user && showAuth) {
     return (
       <AuthView
         onAuthenticated={(next) => {
           setUser(next);
           setView('home');
+          setShowAuth(false);
         }}
+        onClose={() => setShowAuth(false)}
         onPrivacy={() => setShowPrivacy(true)}
         reason={new URLSearchParams(window.location.search).get('signedout') ? 'You have been signed out.' : null}
       />
@@ -185,7 +190,8 @@ export default function App() {
           setView(next);
           window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
         }}
-        user={user}
+        user={user ?? null}
+        onSignIn={() => setShowAuth(true)}
         onSignOut={() => void handleSignOut()}
       />
       <div className={session ? 'view view--hidden' : 'view'}>

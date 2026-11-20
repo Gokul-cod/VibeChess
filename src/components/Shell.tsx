@@ -39,12 +39,13 @@ export type AppView = 'home' | 'weekly';
 interface TopBarProps {
   view: AppView;
   onNavigate: (view: AppView) => void;
-  user: AuthUser;
+  user: AuthUser | null;
+  onSignIn: () => void;
   onSignOut: () => void;
 }
 
-export function TopBar({ view, onNavigate, user, onSignOut }: TopBarProps) {
-  const initial = (user.name || user.email || '?').trim().charAt(0).toUpperCase();
+export function TopBar({ view, onNavigate, user, onSignIn, onSignOut }: TopBarProps) {
+  const initial = (user?.name || user?.email || '?').trim().charAt(0).toUpperCase();
   return (
     <header className="topbar">
       <Brand />
@@ -65,16 +66,27 @@ export function TopBar({ view, onNavigate, user, onSignOut }: TopBarProps) {
         </button>
       </nav>
       <div className="topbar__user">
-        <span className="avatar" aria-hidden="true">
-          {initial}
-        </span>
-        <span className="topbar__email" title={user.email}>
-          {user.email}
-        </span>
-        <AppearanceMenu />
-        <button className="ghost-link" onClick={onSignOut}>
-          Sign out
-        </button>
+        {user ? (
+          <>
+            <span className="avatar" aria-hidden="true">
+              {initial}
+            </span>
+            <span className="topbar__email" title={user.email}>
+              {user.email}
+            </span>
+            <AppearanceMenu />
+            <button className="ghost-link" onClick={onSignOut}>
+              Sign out
+            </button>
+          </>
+        ) : (
+          <>
+            <AppearanceMenu />
+            <button className="button button--primary topbar__signin" onClick={onSignIn}>
+              Sign in / Log in
+            </button>
+          </>
+        )}
       </div>
     </header>
   );

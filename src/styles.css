@@ -4150,3 +4150,33 @@ html {
     transform: none;
   }
 }
+
+/* Optional sign-in: a guest keeps the full site and the top bar offers the door. */
+.topbar__signin {
+  padding: 9px 16px;
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+.auth__back {
+  align-self: flex-start;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.auth__back:hover {
+  color: var(--cream);
+}
+
+.auth__optional {
+  font-size: 0.74rem;
+  line-height: 1.5;
+  color: var(--muted-2);
+}
+
+@media (max-width: 560px) {
+  .topbar__signin {
+    padding: 8px 12px;
+    font-size: 0.74rem;
+  }
+}

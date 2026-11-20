@@ -9,12 +9,13 @@ import { Brand } from './Shell';
 interface AuthViewProps {
   onAuthenticated: (user: AuthUser) => void;
   onPrivacy: () => void;
+  onClose?: () => void;
   reason?: string | null;
 }
 
 type Mode = 'login' | 'signup';
 
-export function AuthView({ onAuthenticated, onPrivacy, reason }: AuthViewProps) {
+export function AuthView({ onAuthenticated, onPrivacy, onClose, reason }: AuthViewProps) {
   const [mode, setMode] = useState<Mode>('login');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -104,6 +105,12 @@ export function AuthView({ onAuthenticated, onPrivacy, reason }: AuthViewProps) 
           <AppearanceMenu />
         </div>
         <div className="auth__card">
+          {onClose && (
+            <button className="inline-link auth__back" type="button" onClick={onClose}>
+              ← Back to the site
+            </button>
+          )}
+          <p className="auth__optional">Signing in is optional — everything on the site works without an account.</p>
           {pending ? (
             <>
               <p className="eyebrow auth__step">Step 2 of 2 · one-time code</p>
@@ -164,8 +171,8 @@ export function AuthView({ onAuthenticated, onPrivacy, reason }: AuthViewProps) 
               <h2 className="auth__title">{mode === 'login' ? 'Welcome back' : 'Make an account'}</h2>
               <p className="auth__sub">
                 {mode === 'login'
-                  ? 'Sign in to review games and build your weekly report.'
-                  : 'One account for your game reviews and weekly reports.'}
+                  ? 'Use your CocoaChess account. You do not need one to review games.'
+                  : 'Only if you want one — the site works without an account.'}
               </p>
 
               {reason && <p className="auth__notice">{reason}</p>}
