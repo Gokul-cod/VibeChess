@@ -359,9 +359,18 @@ export function buildSummary({
   if (!takeaways.length) {
     takeaways.push({
       title: 'Nothing to repair',
-      body: `No mistakes and no blunders: ${counts.best} best, ${counts.excellent} excellent and ${counts.good} good moves out of ${
-        ownMoves.length
-      } reviewed. The next step is making this your normal level rather than a good day.`,
+      body: `No mistakes and no blunders. The breakdown of ${ownMoves.length} moves: ${[
+        ['brilliant', 'brilliant'],
+        ['great', 'great'],
+        ['best', 'best'],
+        ['excellent', 'excellent'],
+        ['good', 'good'],
+        ['inaccuracy', 'inaccuracy'],
+        ['forced', 'forced'],
+      ]
+        .filter(([key]) => counts[key] > 0)
+        .map(([key, label]) => `${counts[key]} ${label}`)
+        .join(', ')}. The next step is making this your normal level rather than a good day.`,
     });
   }
 
