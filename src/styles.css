@@ -352,22 +352,22 @@ a:hover {
   padding: 0 28px 60px;
   display: flex;
   flex-direction: column;
-  gap: 22px;
+  gap: 18px;
 }
 
 .hero {
   display: grid;
   grid-template-columns: minmax(0, 1.25fr) minmax(280px, 0.75fr);
-  gap: 46px;
+  gap: 38px;
   align-items: center;
-  padding: 54px 0 26px;
+  padding: 26px 0 16px;
 }
 
 .hero__copy h1 {
-  font-size: clamp(2.7rem, 5vw, 4.15rem);
-  line-height: 1.02;
+  font-size: clamp(2.05rem, 3.6vw, 3.05rem);
+  line-height: 1.04;
   letter-spacing: -0.03em;
-  margin: 14px 0 20px;
+  margin: 10px 0 14px;
 }
 
 .hero__copy h1 em {
@@ -385,10 +385,10 @@ a:hover {
 }
 
 .lede {
-  max-width: 54ch;
+  max-width: 58ch;
   color: var(--cream-dim);
-  font-size: 1.02rem;
-  line-height: 1.62;
+  font-size: 0.94rem;
+  line-height: 1.55;
 }
 
 .hero__chips {
@@ -397,12 +397,12 @@ a:hover {
   flex-wrap: wrap;
   gap: 8px;
   padding: 0;
-  margin: 24px 0 0;
+  margin: 16px 0 0;
 }
 
 .hero__chips li {
-  font-size: 0.78rem;
-  padding: 7px 13px;
+  font-size: 0.74rem;
+  padding: 6px 12px;
   border-radius: 999px;
   border: 1px solid rgb(var(--hair) / 0.18);
   color: var(--cream-dim);
@@ -421,9 +421,9 @@ a:hover {
   background: linear-gradient(160deg, rgb(var(--glow) / 0.12), rgba(185, 81, 43, 0.09));
   border: 1px solid rgb(var(--glow) / 0.2);
   border-radius: 18px;
-  padding: 16px 18px;
-  font-size: 0.88rem;
-  line-height: 1.55;
+  padding: 13px 16px;
+  font-size: 0.82rem;
+  line-height: 1.5;
   color: var(--cream-dim);
   backdrop-filter: blur(6px);
 }
@@ -2054,8 +2054,8 @@ a:hover {
 @media (max-width: 900px) {
   .hero {
     grid-template-columns: 1fr;
-    gap: 26px;
-    padding-top: 34px;
+    gap: 20px;
+    padding-top: 20px;
   }
 
   .hero__coach {
@@ -2105,7 +2105,7 @@ a:hover {
   }
 
   .hero__copy h1 {
-    font-size: 2.5rem;
+    font-size: 2.05rem;
   }
 
   .panel {

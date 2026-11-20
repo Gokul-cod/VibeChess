@@ -98,7 +98,7 @@ export function HomeView({ onStart, engineMode }: HomeViewProps) {
             </ul>
           </div>
           <div className="hero__coach">
-            <Cocoa mood="happy" size={132} />
+            <Cocoa mood="happy" size={104} />
             <div className="hero__bubble">
               <p className="hero__bubble-title">Cocoa, your house coach</p>
               <p>
