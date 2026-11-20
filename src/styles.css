@@ -3574,6 +3574,113 @@ button.inline-link {
   --shadow-card: 0 30px 70px -45px rgb(0 0 0 / 0.6);
 }
 
+/* Midnight — flat analytics look: near-black surfaces, hairline borders,
+   amber headlines with violet / cyan / green data accents. */
+:root[data-theme='midnight'] {
+  color-scheme: dark;
+  --bg-deep: #050506;
+  --bg: #08080a;
+  --surface: #101013;
+  --surface-2: #141418;
+  --surface-3: #1a1a1f;
+  --line: rgb(255 255 255 / 0.08);
+  --line-strong: rgb(255 255 255 / 0.16);
+  --cream: #f4f5f7;
+  --cream-dim: #cfd2d8;
+  --muted: #8f939c;
+  --amber: #f5a524;
+  --amber-bright: #ffc46b;
+  --caramel: #e08a1e;
+  --rust: #f2683d;
+  --copper: #9a7b6a;
+  --teal: #22c55e;
+  --olive: #84cc16;
+  --sand: #d7dae0;
+  --walnut: #a08a7a;
+  --tone-brilliant: #a78bfa;
+  --tone-great: #4ade80;
+  --tone-best: #fbbf24;
+  --tone-excellent: #38bdf8;
+  --tone-good: #97a0ad;
+  --tone-inaccuracy: #f5a524;
+  --tone-mistake: #f97316;
+  --tone-blunder: #ef4444;
+  --tone-forced: #6b7280;
+  --shade: 0 0 0;
+  --hair: 255 255 255;
+  --glow: 245 165 36;
+  --muted-2: #83878f;
+  --muted-3: #6f737b;
+  --eyebrow: #f5a524;
+  --on-accent: #140f04;
+  --coord-dark: #6b7280;
+  --coord-light: #e7e9ee;
+  --page-canvas: #08080a;
+  --page-bg:
+    radial-gradient(900px 520px at 50% -18%, rgb(255 255 255 / 0.045), transparent 66%),
+    linear-gradient(180deg, #0a0a0c 0%, #08080a 60%, #060607 100%);
+  --pitch-grad:
+    radial-gradient(600px 400px at 8% 0%, rgb(245 165 36 / 0.06), transparent 62%),
+    linear-gradient(165deg, #101013, #0a0a0c);
+  --panel-grad: linear-gradient(180deg, #111114, #0d0d10);
+  --dialog-grad: linear-gradient(180deg, #16161a, #0f0f12);
+  --bar-bg: rgb(10 10 12 / 0.9);
+  --eval-bg: #0a0a0c;
+  --bubble-bg: #1a1a1f;
+  --shadow-card: 0 18px 44px -34px #000;
+  --radius-lg: 16px;
+  --radius-md: 12px;
+  --radius-sm: 9px;
+  --font-display: 'Outfit Variable', 'Outfit', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+:root[data-theme='midnight'] .panel,
+:root[data-theme='midnight'] .reportpanel,
+:root[data-theme='midnight'] .movelist,
+:root[data-theme='midnight'] .tally,
+:root[data-theme='midnight'] .scorecard,
+:root[data-theme='midnight'] .stat,
+:root[data-theme='midnight'] .extreme,
+:root[data-theme='midnight'] .gamecard,
+:root[data-theme='midnight'] .weekgame,
+:root[data-theme='midnight'] .focus__card,
+:root[data-theme='midnight'] .turningpoint {
+  background: var(--panel-grad);
+  box-shadow: none;
+}
+
+:root[data-theme='midnight'] .panel,
+:root[data-theme='midnight'] .gamecard,
+:root[data-theme='midnight'] .reportpanel {
+  border-color: rgb(255 255 255 / 0.07);
+}
+
+:root[data-theme='midnight'] .button--primary {
+  background: linear-gradient(180deg, #ffb545, #ef9412);
+  box-shadow: 0 10px 24px -16px rgb(245 165 36 / 0.8), inset 0 1px 0 rgb(255 255 255 / 0.28);
+}
+
+:root[data-theme='midnight'] .eyebrow {
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+:root[data-theme='midnight'] .brand__mark {
+  background: linear-gradient(150deg, rgb(245 165 36 / 0.22), rgb(168 139 250 / 0.16));
+  border-color: rgb(245 165 36 / 0.32);
+  box-shadow: none;
+}
+
+:root[data-theme='midnight'] .hero__bubble {
+  background: var(--bubble-bg);
+  border-color: rgb(255 255 255 / 0.09);
+  backdrop-filter: none;
+}
+
+:root[data-theme='midnight'] .hero__bubble::before {
+  border-color: rgb(255 255 255 / 0.09);
+}
+
 /* Frosted glass needs the blur, not just the tint. */
 :root[data-theme='glass'] .panel,
 :root[data-theme='glass'] .reportpanel,
@@ -3715,6 +3822,13 @@ button.inline-link {
     radial-gradient(circle at 30% 25%, rgb(255 208 160 / 0.9), transparent 60%),
     radial-gradient(circle at 75% 80%, rgb(122 196 255 / 0.8), transparent 60%),
     linear-gradient(140deg, rgb(255 255 255 / 0.4), rgb(255 255 255 / 0.1));
+}
+
+.appearance__swatch--midnight {
+  background:
+    radial-gradient(circle at 30% 28%, rgb(245 165 36 / 0.95), transparent 58%),
+    radial-gradient(circle at 74% 76%, rgb(168 139 250 / 0.85), transparent 60%),
+    linear-gradient(150deg, #1a1a1f, #08080a);
 }
 
 .appearance__check {

@@ -1,7 +1,8 @@
-export type Theme = 'default' | 'dark' | 'light' | 'glass';
+export type Theme = 'default' | 'dark' | 'light' | 'glass' | 'midnight';
 
 export const THEMES: { id: Theme; label: string }[] = [
   { id: 'glass', label: 'Glass' },
+  { id: 'midnight', label: 'Midnight' },
   { id: 'default', label: 'Coffee' },
   { id: 'dark', label: 'Dark' },
   { id: 'light', label: 'Light' },
@@ -17,10 +18,17 @@ const THEME_COLOR: Record<Theme, string> = {
   dark: '#0a0b0d',
   light: '#f7f3ec',
   glass: '#0b1a25',
+  midnight: '#08080a',
 };
 
 function isTheme(value: string | null): value is Theme {
-  return value === 'default' || value === 'dark' || value === 'light' || value === 'glass';
+  return (
+    value === 'default' ||
+    value === 'dark' ||
+    value === 'light' ||
+    value === 'glass' ||
+    value === 'midnight'
+  );
 }
 
 export function readTheme(): Theme {
